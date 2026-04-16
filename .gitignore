@@ -2,4 +2,9 @@ node_modules/
 database.sqlite
 *.log
 *.tmp
+*.pdf
+*.docx
 .env
+dist/
+build/
+electron-app/dist/

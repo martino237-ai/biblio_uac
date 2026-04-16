@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mémoire - Système de Gestion de Bibliothèque UAC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Calibri', 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 60px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .page-break {
+            page-break-after: always;
+            margin-bottom: 60px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 60px;
+        }
+        
+        /* Couverture */
+        .cover {
+            text-align: center;
+            padding: 80px 0;
+            border-bottom: 3px solid #0b69ff;
+        }
+        
+        .cover h1 {
+            font-size: 36px;
+            color: #0b69ff;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .cover h2 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 60px;
+        }
+        
+        .cover .meta {
+            margin-top: 40px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        
+        .cover .meta p {
+            margin-bottom: 10px;
+        }
+        
+        .cover .institution {
+            color: #0b69ff;
+            font-weight: bold;
+            margin-top: 30px;
+            font-size: 16px;
+        }
+        
+        /* Table des matières */
+        .toc {
+            margin: 60px 0;
+        }
+        
+        .toc h2 {
+            color: #0b69ff;
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .toc ul {
+            list-style: none;
+            margin-left: 30px;
+        }
+        
+        .toc ul li {
+            margin: 12px 0;
+            font-size: 14px;
+        }
+        
+        .toc ul li a {
+            color: #0b69ff;
+            text-decoration: none;
+            border-bottom: 1px dotted #0b69ff;
+        }
+        
+        .toc ul li span {
+            float: right;
+            color: #999;
+        }
+        
+        .toc ul ul {
+            margin-left: 30px;
+            margin-top: 8px;
+        }
+        
+        /* Sections */
+        h1 {
+            color: #0b69ff;
+            font-size: 28px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #0b69ff;
+            padding-bottom: 10px;
+        }
+        
+        h2 {
+            color: #06b6d4;
+            font-size: 20px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        
+        h3 {
+            color: #333;
+            font-size: 16px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        p {
+            margin-bottom: 12px;
+            text-align: justify;
+            line-height: 1.7;
+        }
+        
+        ul, ol {
+            margin-left: 40px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+        
+        /* Tableaux */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        table th {
+            background-color: #0b69ff;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        
+        table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        /* Boîtes */
+        .box {
+            background-color: #f0f7ff;
+            border-left: 4px solid #0b69ff;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .box h4 {
+            color: #0b69ff;
+            margin-bottom: 10px;
+        }
+        
+        /* Code */
+        .code-block {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        
+        /* Images/Diagrams */
+        .diagram {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        
+        /* Numérotation */
+        .chapter-number {
+            color: #0b69ff;
+            font-weight: bold;
+        }
+        
+        /* Footer */
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        
+        /* Impression */
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 40px;
+                max-width: 100%;
+            }
+            
+            .page-break {
+                page-break-after: always;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- COUVERTURE -->
+        <div class="cover page-break">
+            <h1>MÉMOIRE DE FIN D'ÉTUDES</h1>
+            <h2>Système de Gestion de Bibliothèque</h2>
+            <p style="font-size: 18px; margin-top: 40px;">Bibliothèque UAC</p>
+            
+            <div class="meta">
+                <p><strong>Titre du Projet:</strong> Développement d'une Application Web et Desktop<br/>
+                   pour la Gestion Intégrée des Ressources Documentaires</p>
+                
+                <p style="margin-top: 40px;"><strong>Auteur:</strong> [Nom de l'Étudiant]<br/>
+                   <strong>Filière:</strong> Informatique / Génie Logiciel<br/>
+                   <strong>Année Académique:</strong> 2025-2026</p>
+                
+                <p style="margin-top: 40px;"><strong>Superviseurs:</strong><br/>
+                   - Directeur Académique<br/>
+                   - Responsable Technique</p>
+                
+                <div class="institution">
+                    <p>Université Assane Seck de Kaolack (UAC)</p>
+                    <p>Département d'Informatique</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TABLE DES MATIÈRES -->
+        <div class="toc page-break">
+            <h2>TABLE DES MATIÈRES</h2>
+            <ul>
+                <li><a href="#intro">1. Introduction Générale</a></li>
+                <li><a href="#context">2. Contexte et Problématique</a></li>
+                <li><a href="#objectives">3. Objectifs du Projet</a></li>
+                <li><a href="#requirements">4. Cahier des Charges</a></li>
+                <li><a href="#architecture">5. Architecture Technique</a></li>
+                <li><a href="#implementation">6. Implémentation</a></li>
+                <li><a href="#features">7. Fonctionnalités Principales</a></li>
+                <li><a href="#database">8. Conception de la Base de Données</a></li>
+                <li><a href="#testing">9. Tests et Validation</a></li>
+                <li><a href="#deployment">10. Déploiement et Installation</a></li>
+                <li><a href="#conclusion">11. Conclusion</a></li>
+                <li><a href="#appendix">12. Annexes</a></li>
+            </ul>
+        </div>
+        
+        <!-- 1. INTRODUCTION -->
+        <h1 id="intro"><span class="chapter-number">1.</span> Introduction Générale</h1>
+        
+        <p>
+            La gestion des ressources documentaires dans les institutions académiques et culturelles est une activité 
+            critique qui nécessite une organisation méthodique et une traçabilité complète. Les bibliothèques modernes 
+            font face à des défis importants : cataloguage de milliers de documents, gestion des emprunts, suivi des 
+            lecteurs, production de statistiques, et optimisation de l'accès aux ressources.
+        </p>
+        
+        <p>
+            Ce mémoire présente le développement d'une solution logicielle complète destinée à moderniser et automatiser 
+            la gestion des bibliothèques. Le projet Bibliothèque UAC est une application web et desktop développée avec 
+            les technologies les plus récentes et les meilleures pratiques du génie logiciel.
+        </p>
+        
+        <p>
+            L'objectif principal est de fournir un système intégré, intuitif et performant capable de répondre à tous 
+            les besoins opérationnels d'une bibliothèque contemporaine, tout en assurant la sécurité des données et 
+            l'efficacité des processus.
+        </p>
+        
+        <!-- 2. CONTEXTE ET PROBLÉMATIQUE -->
+        <h1 id="context"><span class="chapter-number">2.</span> Contexte et Problématique</h1>
+        
+        <h2>2.1 Situation Actuelle</h2>
+        <p>
+            Actuellement, de nombreuses bibliothèques, notamment celle de l'Université Assane Seck de Kaolack (UAC), 
+            gèrent encore leurs ressources documentaires de manière partiellement manuelle ou avec des systèmes obsolètes. 
+            Cette approche crée plusieurs problèmes :
+        </p>
+        
+        <ul>
+            <li>Manque de traçabilité complète des emprunts et retours</li>
+            <li>Difficulté à localiser rapidement un document dans la collection</li>
+            <li>Absence de statistiques réelles sur l'utilisation des ressources</li>
+            <li>Processus d'emprunt laborieux et fastidieux</li>
+            <li>Risque accru de perte ou de détérioration de documents</li>
+            <li>Absence de communication automatisée sur les retards</li>
+        </ul>
+        
+        <h2>2.2 Besoins Identifiés</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Domaine</th>
+                    <th>Besoin</th>
+                    <th>Justification</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Cataloguage</td>
+                    <td>Système de classement automatisé</td>
+                    <td>Retrouver rapidement les documents</td>
+                </tr>
+                <tr>
+                    <td>Emprunts</td>
+                    <td>Gestion automatisée avec alertes</td>
+                    <td>Minimiser les retards et pertes</td>
+                </tr>
+                <tr>
+                    <td>Consultations</td>
+                    <td>Suivi des consultations sur place</td>
+                    <td>Mesurer l'utilisation réelle</td>
+                </tr>
+                <tr>
+                    <td>Statistiques</td>
+                    <td>Tableaux de bord et rapports</td>
+                    <td>Aide à la décision pour les directeurs</td>
+                </tr>
+                <tr>
+                    <td>Sécurité</td>
+                    <td>Authentification et contrôle d'accès</td>
+                    <td>Protéger les données sensibles</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <!-- 3. OBJECTIFS -->
+        <h1 id="objectives"><span class="chapter-number">3.</span> Objectifs du Projet</h1>
+        
+        <h2>3.1 Objectif Général</h2>
+        <p>
+            Développer une solution complète de gestion de bibliothèque moderne, performante et sécurisée, 
+            capable de gérer l'intégralité du cycle de vie des ressources documentaires et d'optimiser 
+            les opérations quotidiennes.
+        </p>
+        
+        <h2>3.2 Objectifs Spécifiques</h2>
+        <ul>
+            <li><strong>OBJ-1:</strong> Implémenter un système de cataloguage et de classification des documents</li>
+            <li><strong>OBJ-2:</strong> Développer un module complet de gestion des emprunts avec alertes automatiques</li>
+            <li><strong>OBJ-3:</strong> Créer un système de suivi des consultations sur place</li>
+            <li><strong>OBJ-4:</strong> Générer des statistiques et rapports détaillés pour les gestionnaires</li>
+            <li><strong>OBJ-5:</strong> Assurer l'authentification sécurisée et la gestion des rôles (Admin, Bibliothécaire)</li>
+            <li><strong>OBJ-6:</strong> Fournir une interface intuitive et accessible pour les utilisateurs finaux</li>
+            <li><strong>OBJ-7:</strong> Implémenter une architecture scalable et maintenable</li>
+        </ul>
+        
+        <!-- 4. CAHIER DES CHARGES -->
+        <h1 id="requirements"><span class="chapter-number">4.</span> Cahier des Charges</h1>
+        
+        <h2>4.1 Exigences Fonctionnelles</h2>
+        
+        <h3>Module 1: Gestion des Livres (Cataloguage)</h3>
+        <ul>
+            <li>Ajouter, modifier et supprimer des livres</li>
+            <li>Assigner un code unique à chaque livre</li>
+            <li>Gérer plusieurs exemplaires du même titre</li>
+            <li>Classer par thème, auteur et emplacement</li>
+            <li>Suivre la disponibilité en temps réel</li>
+            <li>Recherche et filtrage avancés</li>
+        </ul>
+        
+        <h3>Module 2: Gestion des Lecteurs</h3>
+        <ul>
+            <li>Enregistrement des lecteurs avec statut (Étudiant, Enseignant, Autre)</li>
+            <li>Profil détaillé pour chaque lecteur</li>
+            <li>Historique complet des emprunts</li>
+            <li>Gestion des données de contact</li>
+            <li>Activation/désactivation de comptes</li>
+        </ul>
+        
+        <h3>Module 3: Gestion des Emprunts</h3>
+        <ul>
+            <li>Enregistrement des emprunts avec date limite</li>
+            <li>Retour automatique des emprunts</li>
+            <li>Calcul des retards et pénalités</li>
+            <li>Alertes pour emprunts en retard</li>
+            <li>Historique complet des emprunts/retours</li>
+            <li>Limite d'emprunts simultanés</li>
+        </ul>
+        
+        <h3>Module 4: Gestion des Consultations</h3>
+        <ul>
+            <li>Enregistrement des consultations sur place</li>
+            <li>Durée de consultation</li>
+            <li>Statistiques de consultation par document</li>
+            <li>Analyse d'utilisation</li>
+        </ul>
+        
+        <h3>Module 5: Statistiques et Rapports</h3>
+        <ul>
+            <li>Tableau de bord avec KPIs principaux</li>
+            <li>Graphiques d'utilisation (emprunts, consultations)</li>
+            <li>Listes des retards</li>
+            <li>Rapports exportables (PDF, Excel)</li>
+            <li>Analyse de tendances</li>
+        </ul>
+        
+        <h3>Module 6: Gestion des Utilisateurs</h3>
+        <ul>
+            <li>Authentification avec JWT</li>
+            <li>Deux rôles: Directeur et Bibliothécaire</li>
+            <li>Contrôle d'accès basé sur les rôles (RBAC)</li>
+            <li>Création de comptes par le directeur</li>
+            <li>Gestion des droits d'accès</li>
+        </ul>
+        
+        <h2>4.2 Exigences Non-Fonctionnelles</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Catégorie</th>
+                    <th>Exigence</th>
+                    <th>Critère d'Acceptation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Performance</td>
+                    <td>Temps de réponse rapide</td>
+                    <td>< 2 secondes pour 95% des requêtes</td>
+                </tr>
+                <tr>
+                    <td>Sécurité</td>
+                    <td>Authentification et chiffrage</td>
+                    <td>Tous les mots de passe hashés avec bcrypt</td>
+                </tr>
+                <tr>
+                    <td>Scalabilité</td>
+                    <td>Gérer 10,000+ lecteurs et documents</td>
+                    <td>Pas de dégradation de performance</td>
+                </tr>
+                <tr>
+                    <td>Disponibilité</td>
+                    <td>Uptime minimum 99%</td>
+                    <td>Système accessible en permanence</td>
+                </tr>
+                <tr>
+                    <td>Usabilité</td>
+                    <td>Interface intuitive</td>
+                    <td>Apprentissage < 30 minutes</td>
+                </tr>
+                <tr>
+                    <td>Compatibilité</td>
+                    <td>Multi-navigateurs</td>
+                    <td>Chrome, Firefox, Edge, Safari</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <!-- 5. ARCHITECTURE TECHNIQUE -->
+        <h1 id="architecture"><span class="chapter-number">5.</span> Architecture Technique</h1>
+        
+        <h2>5.1 Vue Générale de l'Architecture</h2>
+        
+        <div class="diagram">
+            [Diagramme d'architecture à inclure]<br/>
+            Frontend (React) ↔ Backend (Express) ↔ Base de Données (MySQL)
+        </div>
+        
+        <h2>5.2 Stack Technologique</h2>
+        
+        <h3>Frontend (Client)</h3>
+        <ul>
+            <li><strong>Framework:</strong> React 18.2.0</li>
+            <li><strong>Routage:</strong> React Router v6.14.1</li>
+            <li><strong>HTTP Client:</strong> Axios 1.12.2</li>
+            <li><strong>Styling:</strong> Tailwind CSS 4.1.14</li>
+            <li><strong>Internationalisation:</strong> i18next 23.16.8</li>
+            <li><strong>Graphiques:</strong> Recharts 3.2.1, Chart.js 4.4.0</li>
+            <li><strong>Build Tool:</strong> Create React App (CRA)</li>
+        </ul>
+        
+        <h3>Backend (Serveur)</h3>
+        <ul>
+            <li><strong>Runtime:</strong> Node.js 16+</li>
+            <li><strong>Framework:</strong> Express.js 4.18.2</li>
+            <li><strong>ORM:</strong> Sequelize 6.32.1</li>
+            <li><strong>Authentification:</strong> JWT (jsonwebtoken 9.0.0)</li>
+            <li><strong>Sécurité:</strong> bcrypt 5.1.0</li>
+            <li><strong>CORS:</strong> cors 2.8.5</li>
+            <li><strong>Validation:</strong> express-validator 7.0.1</li>
+        </ul>
+        
+        <h3>Base de Données</h3>
+        <ul>
+            <li><strong>SGBD:</strong> MySQL 8.0+</li>
+            <li><strong>Driver:</strong> mysql2 3.2.0</li>
+            <li><strong>Schéma:</strong> Modèles relationnels avec associations</li>
+        </ul>
+        
+        <h3>Application Desktop</h3>
+        <ul>
+            <li><strong>Framework:</strong> Electron 38.0.0</li>
+            <li><strong>Intégration:</strong> Même backend React</li>
+        </ul>
+        
+        <h2>5.3 Architecture en Couches</h2>
+        
+        <div class="diagram">
+            <strong>Présentation (React)</strong><br/>
+            ↓<br/>
+            <strong>Routes API (Express)</strong><br/>
+            ↓<br/>
+            <strong>Contrôleurs (Business Logic)</strong><br/>
+            ↓<br/>
+            <strong>Modèles (Sequelize)</strong><br/>
+            ↓<br/>
+            <strong>Base de Données (MySQL)</strong>
+        </div>
+        
+        <h2>5.4 Structure du Projet</h2>
+        
+        <div class="code-block">
+bibliotheque-uac/
+├── frontend/
+│   ├── public/
+│   │   └── index.html
+│   ├── src/
+│   │   ├── pages/
+│   │   │   ├── Home.jsx
+│   │   │   ├── Login.jsx
+│   │   │   ├── Admin.jsx
+│   │   │   ├── Librarian.jsx
+│   │   │   └── Dashboard.jsx
+│   │   ├── panels/
+│   │   │   ├── BooksPanel.jsx
+│   │   │   ├── ReadersPanel.jsx
+│   │   │   ├── LoansPanel.jsx
+│   │   │   ├── ConsultationsPanel.jsx
+│   │   │   ├── UsersPanel.jsx
+│   │   │   └── StatsPanel.jsx
+│   │   ├── shared/
+│   │   │   ├── Header.jsx
+│   │   │   ├── Sidebar.jsx
+│   │   │   └── Modal.jsx
+│   │   ├── styles/
+│   │   │   └── index.css
+│   │   ├── services/
+│   │   │   └── api.js
+│   │   └── App.jsx
+│   ├── package.json
+│   └── .env
+├── backend/
+│   ├── src/
+│   │   ├── controllers/
+│   │   │   ├── authController.js
+│   │   │   ├── bookController.js
+│   │   │   ├── readerController.js
+│   │   │   ├── loanController.js
+│   │   │   ├── consultationController.js
+│   │   │   └── statsController.js
+│   │   ├── models/
+│   │   │   ├── user.js
+│   │   │   ├── book.js
+│   │   │   ├── reader.js
+│   │   │   ├── loan.js
+│   │   │   └── consultation.js
+│   │   ├── routes/
+│   │   │   ├── auth.js
+│   │   │   ├── books.js
+│   │   │   ├── readers.js
+│   │   │   ├── loans.js
+│   │   │   ├── consultations.js
+│   │   │   └── stats.js
+│   │   ├── config/
+│   │   │   └── db.js
+│   │   ├── app.js
+│   │   └── server.js
+│   ├── package.json
+│   ├── .env
+│   └── bibliotheque_uac_init.sql
+└── electron-app/
+    ├── main.js
+    └── package.json
+        </div>
+        
+        <!-- 6. IMPLÉMENTATION -->
+        <h1 id="implementation"><span class="chapter-number">6.</span> Implémentation</h1>
+        
+        <h2>6.1 Processus de Développement</h2>
+        
+        <h3>Phase 1: Analyse et Conception</h3>
+        <ul>
+            <li>Étude des besoins auprès des utilisateurs</li>
+            <li>Modélisation de la base de données</li>
+            <li>Création des wireframes de l'interface</li>
+            <li>Définition des API endpoints</li>
+        </ul>
+        
+        <h3>Phase 2: Développement Backend</h3>
+        <ul>
+            <li>Configuration du serveur Express.js</li>
+            <li>Création des modèles Sequelize</li>
+            <li>Implémentation des contrôleurs</li>
+            <li>Développement des routes API</li>
+            <li>Tests unitaires des endpoints</li>
+        </ul>
+        
+        <h3>Phase 3: Développement Frontend</h3>
+        <ul>
+            <li>Setup de React avec Create React App</li>
+            <li>Création de la structure des composants</li>
+            <li>Implémentation des pages</li>
+            <li>Intégration avec les API</li>
+            <li>Styling avec Tailwind CSS</li>
+            <li>Tests d'intégration</li>
+        </ul>
+        
+        <h3>Phase 4: Tests et Déploiement</h3>
+        <ul>
+            <li>Tests fonctionnels</li>
+            <li>Tests de performance</li>
+            <li>Tests de sécurité</li>
+            <li>Documentation</li>
+            <li>Déploiement en production</li>
+        </ul>
+        
+        <h2>6.2 Patterns et Bonnes Pratiques Utilisés</h2>
+        
+        <ul>
+            <li><strong>MVC (Model-View-Controller):</strong> Séparation claire des responsabilités</li>
+            <li><strong>RESTful API:</strong> Endpoints suivant les conventions REST</li>
+            <li><strong>JWT (JSON Web Tokens):</strong> Authentification stateless</li>
+            <li><strong>Hashing de Mots de Passe:</strong> Utilisation de bcrypt pour la sécurité</li>
+            <li><strong>CORS (Cross-Origin Resource Sharing):</strong> Pour la communication frontend-backend</li>
+            <li><strong>Composition de Composants:</strong> Réutilisabilité et maintenabilité</li>
+            <li><strong>Variables d'Environnement:</strong> Configuration flexible et sécurisée</li>
+        </ul>
+        
+        <h2>6.3 Authentification et Sécurité</h2>
+        
+        <h3>Flux d'Authentification</h3>
+        <ol>
+            <li>L'utilisateur accède à la page de login</li>
+            <li>Il saisit son nom d'utilisateur et mot de passe</li>
+            <li>Le backend vérifie les identifiants dans la base de données</li>
+            <li>Si valides, un token JWT est généré et renvoyé</li>
+            <li>Le token est stocké dans le localStorage du navigateur</li>
+            <li>Chaque requête API inclut le token dans l'en-tête Authorization</li>
+            <li>Le backend vérifie le token avant d'exécuter la requête</li>
+        </ol>
+        
+        <div class="box">
+            <h4>Points de Sécurité Implémentés</h4>
+            <ul>
+                <li>Mots de passe hashés avec bcrypt (10 rounds)</li>
+                <li>Tokens JWT avec expiration (8 heures)</li>
+                <li>Validation des entrées côté serveur</li>
+                <li>HTTPS recommandé en production</li>
+                <li>Contrôle d'accès basé sur les rôles (Admin, Bibliothécaire)</li>
+                <li>Protection contre les requêtes CSRF</li>
+            </ul>
+        </div>
+        
+        <!-- 7. FONCTIONNALITÉS PRINCIPALES -->
+        <h1 id="features"><span class="chapter-number">7.</span> Fonctionnalités Principales</h1>
+        
+        <h2>7.1 Page d'Accueil</h2>
+        <p>
+            La page d'accueil présente l'application de manière professionnelle avec un design moderne et attrayant. 
+            Elle inclut une présentation des fonctionnalités principales, les avantages du système et des boutons 
+            d'appel à l'action pour la connexion.
+        </p>
+        
+        <h2>7.2 Authentification et Connexion</h2>
+        <p>
+            Les utilisateurs s'authentifient avec leurs identifiants (nom d'utilisateur et mot de passe). 
+            L'interface de connexion est sécurisée, intuitive et responsive. Après connexion réussie, 
+            l'utilisateur est redirigé vers son tableau de bord approprié.
+        </p>
+        
+        <h2>7.3 Interface Administrateur (Directeur)</h2>
+        <p>
+            Le directeur dispose d'une interface complète permettant de :
+        </p>
+        <ul>
+            <li>Consulter le tableau de bord général avec les KPIs</li>
+            <li>Accéder aux statistiques détaillées et graphiques</li>
+            <li>Gérer les comptes des bibliothécaires</li>
+            <li>Créer de nouveaux utilisateurs avec rôles</li>
+            <li>Suppression de comptes obsolètes</li>
+            <li>Consulter les rapports et analyses</li>
+        </ul>
+        
+        <h2>7.4 Interface Bibliothécaire</h2>
+        <p>
+            Le bibliothécaire dispose des fonctionnalités opérationnelles :
+        </p>
+        <ul>
+            <li>Gestion complète des livres (ajout, modification, suppression)</li>
+            <li>Recherche et filtrage avancé des documents</li>
+            <li>Enregistrement des emprunts</li>
+            <li>Suivi des retours de livres</li>
+            <li>Gestion des lecteurs (inscription, suspension)</li>
+            <li>Enregistrement des consultations sur place</li>
+            <li>Génération de rapports et exports</li>
+        </ul>
+        
+        <h2>7.5 Tableau de Bord Statistiques</h2>
+        <p>
+            Un tableau de bord interactif affiche :
+        </p>
+        <ul>
+            <li>Nombre total de livres et exemplaires disponibles</li>
+            <li>Nombre de lecteurs actifs</li>
+            <li>Emprunts actifs et retards</li>
+            <li>Statistiques de consultation</li>
+            <li>Graphiques d'évolution sur les périodes</li>
+            <li>Rapports téléchargeables (PDF, Excel)</li>
+        </ul>
+
+        <h2>7.6 Paramètres utilisateur</h2>
+        <p>
+            Le panneau des paramètres a été enrichi pour offrir une expérience plus claire et plus complète aux utilisateurs (directeur et bibliothécaire). Une colonne de navigation permet de basculer entre plusieurs sections :
+        </p>
+        <ul>
+            <li><strong>Profil</strong> - Affiche les informations du compte connecté (nom d'utilisateur, rôle, nom complet, email, etc.).</li>
+            <li><strong>Langue</strong> - Permet de choisir la langue de l'interface (Français / English / Español) et applique la traduction immédiatement.</li>
+            <li><strong>Thème</strong> - Permet de basculer entre le mode clair et le mode sombre, avec conservation du choix en localStorage.</li>
+            <li><strong>À propos</strong> - Fournit des informations sur l'application (nom, version, auteur, contact) et sert de page d'informations générales.</li>
+        </ul>
+        <p>
+            Ces options sont stockées dans <code>localStorage</code>, ce qui permet de conserver les préférences de l'utilisateur entre les sessions.
+        </p>
+
+        <h2>7.7 Export PDF et rapports</h2>
+        <p>
+            L'application permet d'exporter les données clés sous forme de rapports PDF directement depuis l'interface :
+        </p>
+        <ul>
+            <li><strong>Alertes</strong> - Sur la page des alertes, chaque type (stock vide, emprunts en retard, consultations prolongées) propose un bouton PDF qui télécharge un rapport proprement formaté.</li>
+            <li><strong>Statistiques</strong> - Le tableau de bord des statistiques offre un bouton PDF qui génère un document contenant les métriques principales (résumé, top livres, top lecteurs, tendances, répartitions) avec une mise en page améliorée (orientation paysage, marges et style de tableau cohérent).</li>
+        </ul>
+        <p>
+            La génération de PDF s'appuie sur la bibliothèque <code>jspdf</code> avec <code>jspdf-autotable</code> pour l'affichage des tableaux, et s'adapte automatiquement à la longueur des données (pagination, police ajustée, mise en forme uniforme).
+        </p>
+
+        <!-- 8. BASE DE DONNÉES -->
+        <h1 id="database"><span class="chapter-number">8.</span> Conception de la Base de Données</h1>
+        
+        <h2>8.1 Schéma Logique</h2>
+        
+        <div class="diagram">
+            <strong>Diagramme Entité-Association:</strong><br/>
+            Users ← → Books<br/>
+            Readers ← → Loans<br/>
+            Readers ← → Consultations<br/>
+            Books ← → Loans<br/>
+            Books ← → Consultations
+        </div>
+        
+        <h2>8.2 Description des Entités</h2>
+        
+        <h3>Entité: Users (Utilisateurs)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Champ</th>
+                    <th>Type</th>
+                    <th>Contraintes</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>id</td>
+                    <td>INT</td>
+                    <td>PK, AUTO_INCREMENT</td>
+                    <td>Identifiant unique</td>
+                </tr>
+                <tr>
+                    <td>username</td>
+                    <td>VARCHAR(150)</td>
+                    <td>UNIQUE, NOT NULL</td>
+                    <td>Nom d'utilisateur</td>
+                </tr>
+                <tr>
+                    <td>password_hash</td>
+                    <td>VARCHAR(255)</td>
+                    <td>NOT NULL</td>
+                    <td>Mot de passe hashé (bcrypt)</td>
+                </tr>
+                <tr>
+                    <td>nom</td>
+                    <td>VARCHAR(150)</td>
+                    <td></td>
+                    <td>Nom complet</td>
+                </tr>
+                <tr>
+                    <td>role</td>
+                    <td>ENUM</td>
+                    <td>NOT NULL</td>
+                    <td>Role: 'directeur' ou 'bibliothecaire'</td>
+                </tr>
+                <tr>
+                    <td>createdAt</td>
+                    <td>TIMESTAMP</td>
+                    <td>AUTO</td>
+                    <td>Date de création</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h3>Entité: Books (Livres)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Champ</th>
+                    <th>Type</th>
+                    <th>Contraintes</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>id</td>
+                    <td>INT</td>
+                    <td>PK, AUTO_INCREMENT</td>
+                    <td>Identifiant unique</td>
+                </tr>
+                <tr>
+                    <td>code</td>
+                    <td>VARCHAR(100)</td>
+                    <td>UNIQUE, NOT NULL</td>
+                    <td>Code ISBN ou identifiant unique</td>
+                </tr>
+                <tr>
+                    <td>titre</td>
+                    <td>VARCHAR(300)</td>
+                    <td>NOT NULL</td>
+                    <td>Titre du livre</td>
+                </tr>
+                <tr>
+                    <td>auteur</td>
+                    <td>VARCHAR(255)</td>
+                    <td></td>
+                    <td>Nom de l'auteur</td>
+                </tr>
+                <tr>
+                    <td>theme</td>
+                    <td>VARCHAR(255)</td>
+                    <td></td>
+                    <td>Catégorie/Thème</td>
+                </tr>
+                <tr>
+                    <td>total_exemplaires</td>
+                    <td>INT</td>
+                    <td>NOT NULL</td>
+                    <td>Nombre total d'exemplaires</td>
+                </tr>
+                <tr>
+                    <td>exemplaires_disponibles</td>
+                    <td>INT</td>
+                    <td>NOT NULL</td>
+                    <td>Exemplaires actuellement disponibles</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h3>Entité: Readers (Lecteurs)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Champ</th>
+                    <th>Type</th>
+                    <th>Contraintes</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>id</td>
+                    <td>INT</td>
+                    <td>PK, AUTO_INCREMENT</td>
+                    <td>Identifiant unique</td>
+                </tr>
+                <tr>
+                    <td>numero_lecteur</td>
+                    <td>VARCHAR(50)</td>
+                    <td>UNIQUE, NOT NULL</td>
+                    <td>Numéro de carte de lecteur</td>
+                </tr>
+                <tr>
+                    <td>nom</td>
+                    <td>VARCHAR(255)</td>
+                    <td>NOT NULL</td>
+                    <td>Nom complet du lecteur</td>
+                </tr>
+                <tr>
+                    <td>email</td>
+                    <td>VARCHAR(150)</td>
+                    <td></td>
+                    <td>Adresse email</td>
+                </tr>
+                <tr>
+                    <td>statut</td>
+                    <td>ENUM</td>
+                    <td></td>
+                    <td>'Etudiant', 'Enseignant', 'Autre'</td>
+                </tr>
+                <tr>
+                    <td>actif</td>
+                    <td>BOOLEAN</td>
+                    <td>DEFAULT 1</td>
+                    <td>Statut d'activité du compte</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h3>Entité: Loans (Emprunts)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Champ</th>
+                    <th>Type</th>
+                    <th>Contraintes</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>id</td>
+                    <td>INT</td>
+                    <td>PK, AUTO_INCREMENT</td>
+                    <td>Identifiant unique</td>
+                </tr>
+                <tr>
+                    <td>lecteur_id</td>
+                    <td>INT</td>
+                    <td>FK, NOT NULL</td>
+                    <td>Référence au lecteur</td>
+                </tr>
+                <tr>
+                    <td>livre_id</td>
+                    <td>INT</td>
+                    <td>FK, NOT NULL</td>
+                    <td>Référence au livre</td>
+                </tr>
+                <tr>
+                    <td>date_emprunt</td>
+                    <td>DATE</td>
+                    <td>NOT NULL</td>
+                    <td>Date de l'emprunt</td>
+                </tr>
+                <tr>
+                    <td>date_retour_prevue</td>
+                    <td>DATE</td>
+                    <td>NOT NULL</td>
+                    <td>Date limite de retour</td>
+                </tr>
+                <tr>
+                    <td>date_retour_reel</td>
+                    <td>DATE</td>
+                    <td></td>
+                    <td>Date réelle du retour (NULL si non retourné)</td>
+                </tr>
+                <tr>
+                    <td>en_retard</td>
+                    <td>BOOLEAN</td>
+                    <td>DEFAULT 0</td>
+                    <td>Indicateur de retard</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h3>Entité: Consultations (Consultations sur place)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Champ</th>
+                    <th>Type</th>
+                    <th>Contraintes</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>id</td>
+                    <td>INT</td>
+                    <td>PK, AUTO_INCREMENT</td>
+                    <td>Identifiant unique</td>
+                </tr>
+                <tr>
+                    <td>lecteur_id</td>
+                    <td>INT</td>
+                    <td>FK, NOT NULL</td>
+                    <td>Référence au lecteur</td>
+                </tr>
+                <tr>
+                    <td>livre_id</td>
+                    <td>INT</td>
+                    <td>FK, NOT NULL</td>
+                    <td>Référence au livre</td>
+                </tr>
+                <tr>
+                    <td>date_consultation</td>
+                    <td>DATE</td>
+                    <td>NOT NULL</td>
+                    <td>Date de la consultation</td>
+                </tr>
+                <tr>
+                    <td>duree_minutes</td>
+                    <td>INT</td>
+                    <td></td>
+                    <td>Durée en minutes</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- 8.3 ARCHITECTURE TECHNIQUE ET API -->
+        <h2>8.3 Architecture technique et API</h2>
+        <p>
+            L'application est construite suivant une architecture "full-stack" classique :
+            un backend <strong>Node.js / Express</strong> (REST API sécurisée) et un frontend <strong>React</strong> (SPA) consommant ces APIs.
+        </p>
+
+        <h3>8.3.1 Backend (Node.js + Express + Sequelize)</h3>
+        <p>
+            Le backend se situe dans <code>backend/src</code> et s'appuie sur les composants suivants :
+        </p>
+        <ul>
+            <li><strong>app.js</strong> : point d'entrée, configuration d'Express, middlewares globaux (CORS, JSON parsing, logging, etc.)</li>
+            <li><strong>routes/</strong> : définition des routes par domaine (`auth.js`, `books.js`, `loans.js`, `consultations.js`, `stats.js`, `alerts.js`, `activities.js`, etc.)</li>
+            <li><strong>controllers/</strong> : logique métier et traitement des requêtes (authController, bookController, statsController, etc.)</li>
+            <li><strong>models/</strong> : définition des entités (User, Book, Loan, Consultation, Reader, Activity) via <code>Sequelize</code> et configuration des relations.</li>
+            <li><strong>config/db.js</strong> : configuration de la connexion Sequelize à la base MySQL/MariaDB.</li>
+            <li><strong>middleware/</strong> : middlewares réutilisables (`auth.js` pour JWT + RBAC, etc.).</li>
+            <li><strong>utils/</strong> : utilitaires (logActivity, seed, reset_db, etc.).</li>
+        </ul>
+
+        <h4>Fonctions clés du backend</h4>
+        <ul>
+            <li><strong>authController</strong> : gestion de la connexion (JWT), inscription (directeur + lecteur), liste et suppression d'utilisateurs.</li>
+            <li><strong>bookController</strong> : CRUD livres, gestion du stock (exemplaires disponibles).</li>
+            <li><strong>loanController</strong> : emprunts, retours, marquage retards, mise à jour du stock.</li>
+            <li><strong>consultationController</strong> : enregistrement des consultations, calcul d’heures, détection des plus de 2h.</li>
+            <li><strong>statsController</strong> : calculs statistiques, tendances, répartition par filière/faculté, exports (PDF/Excel) et données pour les graphiques.</li>
+            <li><strong>alertController</strong> : génération des listes d’alertes (stocks vides, retards, consultations prolongées).</li>
+            <li><strong>activityController</strong> : récupération des logs d’activité pour la surveillance et l’audit.</li>
+        </ul>
+
+        <h4>Gestion des rôles et sécurité</h4>
+        <p>
+            Le système supporte plusieurs rôles : <code>directeur</code>, <code>bibliothecaire</code> et <code>lecteur</code>. Le rôle est stocké dans la table <code>users</code> et est inséré dans le token JWT.
+        </p>
+        <p>Protection des routes :</p>
+        <ul>
+            <li><strong>Token JWT</strong> : envoyé dans l'en-tête <code>Authorization: Bearer &lt;token&gt;</code> (géré par <code>axios</code> dans le frontend).</li>
+            <li><strong>authenticateToken</strong> : middleware qui vérifie et décode le token JWT.</li>
+            <li><strong>requireRole</strong> : middleware qui vérifie que le rôle de l'utilisateur correspond aux autorisations attendues pour certaines routes (ex. création d'utilisateur, suppression, accès admin, etc.).</li>
+        </ul>
+
+        <h3>8.3.2 Frontend (React + Tailwind + Recharts)</h3>
+        <p>
+            Le frontend est organisé en composants et pages, avec un routage role-based :
+            <code>/librarian</code> pour le bibliothécaire, <code>/admin</code> pour le directeur.
+        </p>
+        <p>Composants principaux :</p>
+        <ul>
+            <li><strong>Pages</strong> : <code>Login.jsx</code>, <code>Librarian.jsx</code>, <code>Admin.jsx</code>, <code>Books.jsx</code>, etc.</li>
+            <li><strong>Panneaux</strong> : <code>BooksPanel.jsx</code>, <code>LoansPanel.jsx</code>, <code>AlertsPanel.jsx</code>, <code>StatsPanel.jsx</code>, <code>SettingsPanel.jsx</code>, etc.</li>
+            <li><strong>Composants partagés</strong> : <code>ExportButton.jsx</code>, <code>Header.jsx</code>, <code>Sidebar</code>.</li>
+        </ul>
+        <p>Gestion de l'état :</p>
+        <ul>
+            <li>Les données sont chargées via des <code>useEffect</code> synchronisés avec les filtres (période, dates, etc.).</li>
+            <li>Le token JWT est stocké dans <code>localStorage</code> et appliqué automatiquement aux requêtes via un interceptor Axios.</li>
+            <li>Les préférences (langue, thème) sont également stockées dans <code>localStorage</code> pour persistance.</li>
+        </ul>
+
+        <h4>Gestion Multilingue</h4>
+        <p>
+            La bibliothèque <code>react-i18next</code> est utilisée pour fournir des traductions (fr/en/es). Les fichiers de traduction sont définis dans <code>src/i18n.js</code> et plusieurs composants utilisent la fonction <code>t()</code> pour afficher les textes.
+        </p>
+
+        <h4>Gestion du thème</h4>
+        <p>
+            Le thème clair/sombre est géré via une classe <code>dark</code> ajoutée à la racine (<code>document.documentElement</code>), et les styles Tailwind réagissent à cette classe.
+            Le choix est enregistré dans <code>localStorage</code> pour persistance.
+        </p>
+
+        <h3>8.3.3 Modules clés et flux</h3>
+        <h4>1. Connexion</h4>
+        <ul>
+            <li>L'utilisateur saisit ses identifiants dans <code>Login.jsx</code>.</li>
+            <li>Le formulaire appelle <code>POST /api/auth/login</code> et reçoit un token + infos utilisateur.</li>
+            <li>Le token est stocké dans <code>localStorage</code> et Axios envoie ce token dans l'en-tête pour chaque requête suivante.</li>
+            <li>Le rôle (directeur/bibliothécaire/lecteur) détermine la route d'accès (admin/librarian/books).</li>
+        </ul>
+
+        <h4>2. Export PDF / Excel</h4>
+        <p>
+            L'application propose plusieurs exports :
+        </p>
+        <ul>
+            <li><strong>Alertes</strong> : génération PDF à partir des données renvoyées par les endpoints d'alerte.</li>
+            <li><strong>Statistiques</strong> : génération PDF (via <code>StatsPanel</code>) et Excel (via <code>xlsx</code>) à partir des datasets statistiques.</li>
+        </ul>
+        <p>
+            Le composant <code>ExportButton</code> encapsule la logique d'appel API et de génération du fichier. Pour les PDF, il utilise <code>jspdf</code> et <code>jspdf-autotable</code>, en adaptant l'orientation, les marges et les styles pour garantir la lisibilité.
+        </p>
+
+        <h4>3. Journalisation des actions (Audit)</h4>
+        <p>
+            Le backend enregistre automatiquement les actions importantes via <code>utils/activityLogger.js</code>. Chaque entrée contient :
+        </p>
+        <ul>
+            <li><strong>utilisateur_id</strong> : lien vers le compte ayant effectué l'action</li>
+            <li><strong>action</strong> : description courte (ex. "Création utilisateur", "Suppression livre")</li>
+            <li><strong>details</strong> : JSON des données (ex. id du livre, modifications, etc.)</li>
+            <li><strong>timestamp</strong> : date / heure (automatique en base)</li>
+        </ul>
+        <p>
+            Le frontend affiche ces logs dans le panneau <strong>Activités</strong>, en convertissant automatiquement les ID vers des noms lisibles (ex. remplace <code>livre_id</code> par le titre du livre).
+        </p>
+
+        <h3>8.3.4 Extensions futures possibles</h3>
+        <ul>
+            <li>Ajout d'un système de notifications en temps réel (WebSocket) pour les alertes de retard / stock.</li>
+            <li>Support multi-établissement (bibliothèques multiples) avec séparation des données par organisation.</li>
+            <li>Ajout de rôles supplémentaires (gestionnaire, responsable de département) avec permissions fines.</li>
+            <li>Historisation avancée des modifications (audit trail complet des modifications de livres et lecteurs).</li>
+        </ul>
+
+        <!-- 9. TESTS ET VALIDATION -->
+        <h1 id="testing"><span class="chapter-number">9.</span> Tests et Validation</h1>
+        
+        <h2>9.1 Stratégie de Test</h2>
+        
+        <h3>Tests Unitaires</h3>
+        <ul>
+            <li>Vérification des contrôleurs (business logic)</li>
+            <li>Validation des modèles Sequelize</li>
+            <li>Tests des validations d'entrée</li>
+            <li>Tests de calcul (dates, statistiques)</li>
+        </ul>
+        
+        <h3>Tests d'Intégration</h3>
+        <ul>
+            <li>Tests des endpoints API</li>
+            <li>Vérification de la communication frontend-backend</li>
+            <li>Tests des transactions en base de données</li>
+            <li>Validation des flux complets (authentification, emprunt, retour)</li>
+        </ul>
+        
+        <h3>Tests Fonctionnels</h3>
+        <ul>
+            <li>Vérification de chaque cas d'usage</li>
+            <li>Tests des permissions (RBAC)</li>
+            <li>Validation des messages d'erreur</li>
+            <li>Tests des exports et rapports</li>
+        </ul>
+        
+        <h3>Tests de Performance</h3>
+        <ul>
+            <li>Temps de réponse des requêtes critiques</li>
+            <li>Comportement sous charge</li>
+            <li>Optimisation des requêtes BD</li>
+            <li>Gestion de la mémoire</li>
+        </ul>
+        
+        <h3>Tests de Sécurité</h3>
+        <ul>
+            <li>Vérification de l'authentification (JWT)</li>
+            <li>Test du contrôle d'accès (RBAC)</li>
+            <li>Protection contre l'injection SQL</li>
+            <li>Validation des entrées utilisateur</li>
+        </ul>
+        
+        <h2>9.2 Cas de Test Critiques</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Cas de Test</th>
+                    <th>Étapes</th>
+                    <th>Résultat Attendu</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Authentification Valide</td>
+                    <td>Login avec identifiants corrects</td>
+                    <td>Token JWT généré, redirection</td>
+                    <td>✓ Passé</td>
+                </tr>
+                <tr>
+                    <td>Emprunt de Livre</td>
+                    <td>Sélectionner lecteur + livre, enregistrer</td>
+                    <td>Emprunt créé, disponibilité mise à jour</td>
+                    <td>✓ Passé</td>
+                </tr>
+                <tr>
+                    <td>Retour de Livre</td>
+                    <td>Saisir code du livre, valider retour</td>
+                    <td>Retard calculé si applicable, exemplaire disponible</td>
+                    <td>✓ Passé</td>
+                </tr>
+                <tr>
+                    <td>Génération Rapport</td>
+                    <td>Sélectionner période, exporter PDF</td>
+                    <td>Fichier PDF généré correctement</td>
+                    <td>✓ Passé</td>
+                </tr>
+                <tr>
+                    <td>Accès Non Autorisé</td>
+                    <td>Bibliothécaire accède zone admin</td>
+                    <td>Message d'erreur, redirection</td>
+                    <td>✓ Passé</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <!-- 10. DÉPLOIEMENT -->
+        <h1 id="deployment"><span class="chapter-number">10.</span> Déploiement et Installation</h1>
+        
+        <h2>10.1 Environnement de Production</h2>
+        
+        <h3>Configuration Requise</h3>
+        <ul>
+            <li><strong>Serveur:</strong> WAMP/LAMP avec Node.js 16+</li>
+            <li><strong>MySQL:</strong> Version 8.0 ou supérieure</li>
+            <li><strong>Node.js:</strong> Version 16.x ou 18.x LTS</li>
+            <li><strong>Navigateur:</strong> Chrome 90+, Firefox 88+, Edge 90+, Safari 14+</li>
+            <li><strong>Espace Disque:</strong> Minimum 2 GB</li>
+            <li><strong>RAM:</strong> Minimum 2 GB</li>
+        </ul>
+        
+        <h2>10.2 Étapes d'Installation</h2>
+        
+        <h3>Étape 1: Préparation du Serveur</h3>
+        <div class="code-block">
+# Installer Node.js et npm
+# https://nodejs.org/
+
+# Vérifier les installations
+node --version
+npm --version
+mysql --version
+        </div>
+        
+        <h3>Étape 2: Configuration de la Base de Données</h3>
+        <div class="code-block">
+# Créer la base de données
+mysql -u root -p < backend/bibliotheque_uac_init.sql
+
+# Ou via MySQL Workbench:
+# 1. Créer nouvelle schéma: bibliotheque_uac
+# 2. Importer le fichier SQL
+        </div>
+        
+        <h3>Étape 3: Installation Backend</h3>
+        <div class="code-block">
+cd backend
+npm install
+cp .env.example .env
+# Éditer .env avec les paramètres appropriés
+npm run dev
+# Backend disponible sur http://localhost:3333
+        </div>
+        
+        <h3>Étape 4: Installation Frontend</h3>
+        <div class="code-block">
+cd frontend
+npm install
+# Build pour production (optionnel)
+npm run build
+# Déployer le contenu du dossier 'build' sur un serveur web
+        </div>
+        
+        <h2>10.3 Variables d'Environnement</h2>
+        
+        <h3>Backend (.env)</h3>
+        <div class="code-block">
+PORT=3333
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASS=
+DB_NAME=bibliotheque_uac
+JWT_SECRET=votre_cle_secrete_ici
+NODE_ENV=production
+        </div>
+        
+        <h3>Frontend (.env)</h3>
+        <div class="code-block">
+REACT_APP_API_BASE=http://localhost:3333/api
+        </div>
+        
+        <h2>10.4 Vérification du Déploiement</h2>
+        <ul>
+            <li>✓ Backend répond sur http://localhost:3333/api (GET)</li>
+            <li>✓ Frontend accessible sur http://localhost:3000</li>
+            <li>✓ Base de données créée et accessible</li>
+            <li>✓ Authentification fonctionnelle</li>
+            <li>✓ CRUD opérationnel pour tous les modules</li>
+            <li>✓ Statistiques et rapports générés correctement</li>
+        </ul>
+        
+        <!-- 11. CONCLUSION -->
+        <h1 id="conclusion"><span class="chapter-number">11.</span> Conclusion</h1>
+        
+        <h2>11.1 Résumé du Projet</h2>
+        <p>
+            Ce projet a abouti au développement d'une solution complète de gestion de bibliothèque moderne et intégrée. 
+            L'application Bibliothèque UAC répond à tous les objectifs fixés et fournit une plateforme robuste, 
+            sécurisée et scalable pour la gestion des ressources documentaires.
+        </p>
+        
+        <h2>11.2 Réalisations</h2>
+        <ul>
+            <li>✓ Architecte une application web full-stack moderne</li>
+            <li>✓ Implémenté tous les modules fonctionnels requis</li>
+            <li>✓ Assuré la sécurité avec authentification JWT et hashage de mots de passe</li>
+            <li>✓ Fourni une interface utilisateur intuitive et professionnelle</li>
+            <li>✓ Généré des statistiques et rapports complets</li>
+            <li>✓ Respecté les bonnes pratiques du génie logiciel</li>
+            <li>✓ Documenté complètement le code et les processus</li>
+        </ul>
+        
+        <h2>11.3 Avantages de la Solution</h2>
+        <ul>
+            <li><strong>Efficacité Opérationnelle:</strong> Automatisation complète des processus manuels</li>
+            <li><strong>Traçabilité:</strong> Historique complet de tous les mouvements de documents</li>
+            <li><strong>Données Fiables:</strong> Base de données bien structurée et sécurisée</li>
+            <li><strong>Prise de Décision:</strong> Statistiques et rapports détaillés pour la direction</li>
+            <li><strong>Évolutivité:</strong> Architecture capable de supporter la croissance</li>
+            <li><strong>Maintenance Facile:</strong> Code bien organisé et documenté</li>
+        </ul>
+        
+        <h2>11.4 Améliorations Futures</h2>
+        <ul>
+            <li>Intégration d'un système de notifications SMS/Email pour les retards</li>
+            <li>Développement d'une application mobile (React Native)</li>
+            <li>Implémentation d'un système de réservation de livres</li>
+            <li>Analyse prédictive avec machine learning pour les recommandations</li>
+            <li>Intégration avec des systèmes de code-barres/RFID</li>
+            <li>Multi-langues avancé (actuellement français seulement)</li>
+            <li>Authentification OAuth2 (Google, Facebook)</li>
+            <li>Synchronisation en temps réel avec WebSockets</li>
+        </ul>
+        
+        <h2>11.5 Recommandations</h2>
+        <ul>
+            <li>Effectuer une formation régulière des utilisateurs</li>
+            <li>Mettre en place un plan de sauvegarde quotidienne de la base de données</li>
+            <li>Suivre les mises à jour de sécurité des dépendances (npm audit)</li>
+            <li>Monitorer les performances en production avec des outils comme New Relic</li>
+            <li>Établir un plan de maintenance préventive</li>
+            <li>Documenter les processus opérationnels</li>
+            <li>Former un support technique dédié</li>
+        </ul>
+        
+        <!-- 12. ANNEXES -->
+        <h1 id="appendix"><span class="chapter-number">12.</span> Annexes</h1>
+        
+        <h2>12.1 Guide d'Installation Rapide</h2>
+        <div class="code-block">
+# Cloner/Télécharger le projet
+cd bibliotheque-uac
+
+# Frontend
+cd frontend
+npm install
+npm start
+# Accessible sur http://localhost:3000
+
+# Backend (dans un autre terminal)
+cd backend
+npm install
+npm run dev
+# Accessible sur http://localhost:3333
+
+# Comptes de test
+# Admin: username=admin, password=admin
+# Biblio: username=biblio, password=biblio
+        </div>
+        
+        <h2>12.2 Structure des Données Clés</h2>
+        
+        <h3>Modèle Book</h3>
+        <div class="code-block">
+{
+  id: 1,
+  code: "ISBN-001",
+  titre: "Apprendre React",
+  auteur: "Jean Martin",
+  theme: "Informatique",
+  emplacement: "Rayonnage A-1",
+  total_exemplaires: 5,
+  exemplaires_disponibles: 3,
+  createdAt: "2025-01-15T10:00:00Z",
+  updatedAt: "2025-02-02T15:30:00Z"
+}
+        </div>
+        
+        <h3>Modèle Loan</h3>
+        <div class="code-block">
+{
+  id: 1,
+  lecteur_id: 5,
+  livre_id: 1,
+  date_emprunt: "2025-02-01",
+  date_retour_prevue: "2025-02-15",
+  date_retour_reel: null,
+  en_retard: false,
+  createdAt: "2025-02-01T09:00:00Z",
+  updatedAt: "2025-02-01T09:00:00Z"
+}
+        </div>
+        
+        <h2>12.3 API Endpoints Principaux</h2>
+        
+        <h3>Authentification</h3>
+        <div class="code-block">
+POST   /api/auth/login          - Connexion
+POST   /api/auth/register       - Créer utilisateur
+GET    /api/auth/users          - Lister utilisateurs
+DELETE /api/auth/users/:id      - Supprimer utilisateur
+        </div>
+        
+        <h3>Livres</h3>
+        <div class="code-block">
+GET    /api/books               - Lister tous les livres
+POST   /api/books               - Créer un livre
+GET    /api/books/:id           - Détail d'un livre
+PUT    /api/books/:id           - Modifier un livre
+DELETE /api/books/:id           - Supprimer un livre
+        </div>
+        
+        <h3>Emprunts</h3>
+        <div class="code-block">
+GET    /api/loans               - Lister emprunts
+POST   /api/loans               - Créer emprunt
+PUT    /api/loans/:id/return    - Enregistrer retour
+GET    /api/loans/late          - Lister emprunts en retard
+        </div>
+        
+        <h3>Lecteurs</h3>
+        <div class="code-block">
+GET    /api/readers             - Lister lecteurs
+POST   /api/readers             - Créer lecteur
+GET    /api/readers/:id         - Détail lecteur
+PUT    /api/readers/:id         - Modifier lecteur
+DELETE /api/readers/:id         - Supprimer lecteur
+        </div>
+        
+        <h3>Statistiques</h3>
+        <div class="code-block">
+GET    /api/stats/summary       - Résumé des stats
+GET    /api/stats/loans         - Stats emprunts
+GET    /api/stats/consultations - Stats consultations
+        </div>
+        
+        <h2>12.4 Technologies et Versions Utilisées</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Technologie</th>
+                    <th>Version</th>
+                    <th>Utilisation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>React</td>
+                    <td>18.2.0</td>
+                    <td>Framework frontend</td>
+                </tr>
+                <tr>
+                    <td>Express.js</td>
+                    <td>4.18.2</td>
+                    <td>Framework backend</td>
+                </tr>
+                <tr>
+                    <td>Sequelize</td>
+                    <td>6.32.1</td>
+                    <td>ORM MySQL</td>
+                </tr>
+                <tr>
+                    <td>MySQL</td>
+                    <td>8.0+</td>
+                    <td>Base de données</td>
+                </tr>
+                <tr>
+                    <td>JWT</td>
+                    <td>9.0.0</td>
+                    <td>Authentification</td>
+                </tr>
+                <tr>
+                    <td>Tailwind CSS</td>
+                    <td>4.1.14</td>
+                    <td>Styling frontend</td>
+                </tr>
+                <tr>
+                    <td>Axios</td>
+                    <td>1.12.2</td>
+                    <td>Client HTTP</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h2>12.5 Ressources Additionnelles</h2>
+        <ul>
+            <li><strong>Documentation Complète:</strong> Consultez les fichiers README dans chaque dossier</li>
+            <li><strong>Configuration:</strong> Voir fichiers .env pour la personnalisation</li>
+            <li><strong>Base de Données:</strong> Script SQL complet fourni (bibliotheque_uac_init.sql)</li>
+            <li><strong>Code Source:</strong> Entièrement commenté et organisé par fonctionnalité</li>
+            <li><strong>Support:</strong> Équipe technique disponible pour l'assistance</li>
+        </ul>
+        
+        <footer>
+            <p>Système de Gestion de Bibliothèque UAC — Mémoire de Fin d'Études 2026</p>
+            <p>© 2026 Tous droits réservés | Document confidentiel</p>
+        </footer>
+    </div>
+</body>
+</html>
