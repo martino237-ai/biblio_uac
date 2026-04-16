@@ -1,0 +1,354 @@
+/* ========== LAYOUT GLOBAL ADMIN ========== */
+.admin-shell {
+  /* sidebar is fixed, use flex to manage spacing */
+  display: flex;
+  background: #f4f6fa;
+  height: 100vh;
+  /* ensure main grows to fill remaining space */
+  align-items: stretch;
+  transition: background-color 0.3s ease;
+}
+
+/* ========== SIDEBAR ADMIN (fixed) ========== */
+.sidebar-admin {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100vh;
+  background: #1e293b; /* bleu sombre pro */
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px;
+  overflow-y: visible; /* non scrollable */
+  transition: background-color 0.3s ease;
+  /* moved hiding behaviour below inside mobile query */
+}
+.sidebar-admin.opened {
+  transform: translateX(0);
+}
+/* hide only on small screens */
+@media (max-width: 768px) {
+  .sidebar-admin {
+    transform: translateX(-100%);
+  }
+  .sidebar-admin.closed {
+    transform: translateX(-100%);
+  }
+}
+.sidebar-header {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.sidebar-header p {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  flex: 1;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: 0.2s;
+}
+
+.sidebar-item:hover {
+  background: #334155;
+}
+
+.sidebar-item.active {
+  background: #2563eb;
+}
+
+.sidebar-item .icon {
+  font-size: 18px;
+}
+
+/* ========== MAIN CONTENT ========== */
+.main {
+  margin-left: 260px; /* leave room for fixed sidebar */
+  padding: 18px;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-width: 0; /* allow flex children to shrink properly */
+  transition: background-color 0.3s ease;
+}
+
+/* ========== CARDS ========== */
+.card {
+  background: white;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ========== DASHBOARD GRID ========== */
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.grid-6 {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+/* ==== RESPONSIVE FOR ADMIN LAYOUT ==== */
+@media (max-width: 900px) {
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .grid-6 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar-admin {
+    position: fixed;
+    top:0;
+    left:0;
+    width:260px;
+    height:100vh;
+    z-index:999;
+  }
+  .main {
+    margin-left: 0;
+    padding: 18px 12px;
+  }
+
+  /* shift header when admin sidebar open on mobile */
+  .sidebar-open .header {
+    left:260px; /* width of admin sidebar */
+  }
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========== STATS CARDS ========== */
+.stat {
+  text-align: center;
+}
+
+.stat-title {
+  font-size: 14px;
+  color: #555;
+  transition: color 0.3s ease;
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: bold;
+  margin-top: 6px;
+  transition: color 0.3s ease;
+}
+
+.danger {
+  background: #fee2e2;
+}
+
+/* ========== SETTINGS PANEL STYLES ========== */
+.settings-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.settings-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 800px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.settings-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  transition: color 0.3s ease;
+}
+
+/* ========== DARK MODE ========== */
+.dark .admin-shell {
+  background: #0f172a;
+}
+
+.dark .sidebar-admin {
+  background: #020617;
+}
+
+.dark .main {
+  background: #0f172a;
+}
+
+.dark .card,
+.dark .settings-card {
+  background: #1e293b;
+  color: #f8fafc;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.dark .stat-title {
+  color: #cbd5e1;
+}
+
+.dark .stat-value {
+  color: #f8fafc;
+}
+
+.dark .settings-title {
+  color: #f8fafc;
+}
+
+.dark .danger {
+  background: #dc2626;
+  color: #f8fafc;
+}
+
+.dark .sidebar-item {
+  color: #f9fafb;
+}
+
+.dark .sidebar-item:hover {
+  background-color: #1f2937;
+}
+
+.dark .sidebar-item.active {
+  background-color: #3b82f6;
+}
+
+.dark .brand-text p {
+  color: #6b7280;
+}
+
+.dark .sidebar-footer {
+  color: #6b7280;
+}
+/* Sidebar Admin */
+.sidebar-admin {
+  width: 260px;
+  background-color: #1f2937; /* gris foncé */
+  color: #f9fafb; /* texte clair */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100vh;
+  padding: 20px 0;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  margin-bottom: 30px;
+}
+
+.brand-logo {
+  font-size: 28px;
+  font-weight: bold;
+  margin-right: 10px;
+  /* if an image is placed here, size it to container */
+  width: 40px;
+  height: 40px;
+}
+.brand-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.brand-text h2 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.brand-text p {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0;
+}
+
+/* Menu */
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  margin: 5px 0;
+  border-radius: 8px;
+  background-color: transparent;
+  color: #f9fafb;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease-in-out;
+}
+
+.sidebar-item .icon {
+  font-size: 18px;
+}
+
+.sidebar-item:hover {
+  background-color: #374151; /* gris moyen */
+}
+
+.sidebar-item.active {
+  background-color: #2563eb; /* bleu actif */
+  color: #ffffff;
+}
+
+/* Footer */
+.sidebar-footer {
+  text-align: center;
+  font-size: 12px;
+  color: #9ca3af;
+  padding: 10px 0;
+}

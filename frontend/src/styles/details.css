@@ -1,0 +1,165 @@
+/* ===== CONTAINER PRINCIPAL ===== */
+.book-details-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 10px;
+  transition: background-color 0.3s ease;
+}
+
+/* ===== BANNIÈRE EN-TÊTE ===== */
+.book-top-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  color: white;
+  padding: 14px;
+  border-radius: 14px;
+  transition: background 0.3s ease;
+}
+
+.book-title {
+  margin: 0;
+  font-size: 20px;
+}
+
+.book-subtitle {
+  margin: 5px 0 0;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+/* ===== BADGE DE DISPONIBILITÉ ===== */
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.status-badge.ok {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-badge.no {
+  background: #fee2e2;
+  color: #7f1d1d;
+}
+
+/* ===== GRILLE D'INFOS ===== */
+.book-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* ===== CARTES D'INFO ===== */
+.book-card {
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  border-left: 4px solid #2563eb;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.book-card h4 {
+  margin: 0 0 6px 0;
+  color: #1e3a8a;
+  transition: color 0.3s ease;
+}
+
+.book-card p {
+  margin: 0;
+  transition: color 0.3s ease;
+}
+
+/* Carte mise en valeur */
+.book-card.highlight {
+  background: #eff6ff;
+  border-left: 4px solid #1e40af;
+}
+
+/* Nombre d’exemplaires stylé */
+.ex-count {
+  font-size: 18px;
+  font-weight: bold;
+  color: #1e40af;
+  transition: color 0.3s ease;
+}
+
+/* ===== DESCRIPTION ===== */
+.book-description-section h4 {
+  margin-bottom: 6px;
+  transition: color 0.3s ease;
+}
+
+.book-desc-box {
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 10px;
+  min-height: 90px;
+  border: 1px solid #e5e7eb;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* ===== FOOTER ===== */
+.book-footer {
+  text-align: right;
+  margin-top: 10px;
+}
+
+/* ===== DARK MODE ===== */
+.dark .book-details-wrapper {
+  background: #0f172a;
+}
+
+.dark .book-top-banner {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+}
+
+.dark .book-card {
+  background: #1e293b;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  border-left-color: #3b82f6;
+}
+
+.dark .book-card h4 {
+  color: #60a5fa;
+}
+
+.dark .book-card p {
+  color: #cbd5e1;
+}
+
+.dark .book-card.highlight {
+  background: #1e293b;
+  border-left-color: #60a5fa;
+}
+
+.dark .ex-count {
+  color: #60a5fa;
+}
+
+.dark .book-description-section h4 {
+  color: #f8fafc;
+}
+
+.dark .book-desc-box {
+  background: #1e293b;
+  border-color: #374151;
+  color: #cbd5e1;
+}
+
+.dark .status-badge.ok {
+  background: #166534;
+  color: #dcfce7;
+}
+
+.dark .status-badge.no {
+  background: #7f1d1d;
+  color: #fee2e2;
+}

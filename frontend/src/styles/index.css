@@ -1,0 +1,793 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html.dark {
+  --bg:#1e293b;
+  --card:#334155;
+  --muted:#9ca3af;
+  --text:#f8fafc;
+  --primary:#3b82f6;
+  --accent:#06b6d4;
+  --glass:rgba(255,255,255,0.06);
+  --shadow:0 10px 30px rgba(0,0,0,0.5);
+  --sidebar-bg: linear-gradient(180deg,#111827,#1e293b);
+  --sidebar-text:#ffffff;
+}
+
+:root{
+  --bg:#f3f6fb;
+  --card:#ffffff;
+  --muted:#6b7280;
+  --text:#0f172a;
+  --primary:#0b69ff;
+  --accent:#06b6d4;
+  --glass:rgba(15,23,42,0.06);
+  --radius:12px;
+  --shadow:0 10px 30px rgba(11,20,60,0.06);
+  --max:1200px;
+  --sidebar-bg: linear-gradient(180deg,#061635,#08306a);
+  --sidebar-text:#ffffff;
+}
+
+/* ===== RESET ===== */
+*{box-sizing:border-box}
+html,body,#root{
+  height:100%;
+  width:100%;
+}
+body{
+  margin:0;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;
+  color:var(--text);
+  background:var(--bg);
+  overflow-x:hidden;
+  /* bibliothèque wallpaper (remplacer fonds_acceuil.jpg par votre image) */
+  /* moved to public/images so we can serve it statically */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background 0.35s ease, color 0.35s ease;
+}
+
+/* smooth transitions for theme changes */
+* {
+  transition: background 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+
+/* ===== LAYOUT PRINCIPAL (CORRIGÉ) ===== */
+.app-shell{
+  /* sidebar is fixed, use flex layout so main can expand fully */
+  display:flex;
+  flex-direction:row;
+  min-height:100vh;
+}
+
+/* ===== SIDEBAR FIXED ===== */
+.sidebar{
+  position:fixed;
+  top:0;
+  left:0;
+  padding:18px;
+  /* margin removed when fixed, adjust main instead */
+  border-radius:0 14px 14px 0;
+  background:var(--sidebar-bg);
+  color:var(--sidebar-text);
+  box-shadow:var(--shadow);
+  width:260px; /* match grid earlier */
+  height:100vh;
+  overflow-y:visible; /* sidebar shouldn't scroll */
+  /* default hidden (moved fully left) */
+  transform: translateX(-100%);
+}
+
+/* when we add opened/closed helper classes via React */
+.sidebar.opened {
+  transform: translateX(0);
+}
+/* hide only on small screens; on md+ we rely on Tailwind's md:translate-x-0
+   so sidebar remains visible regardless of the `closed` state */
+@media (max-width: 768px) {
+  .sidebar.closed {
+    transform: translateX(-100%);
+  }
+}
+
+/* adjust main content when sidebar is fixed */
+.app-shell .main{
+  margin-left:260px;
+  padding:18px;
+  overflow-y:auto;
+  flex: 1 1 auto; /* take remaining space */
+  min-width: 0; /* allow shrinking inside flex container */
+}
+
+/* ================= RESPONSIVE ADJUSTMENTS ================= */
+@media (max-width: 768px) {
+  /* sidebar becomes an overlay drawer on mobile */
+  .sidebar {
+    position:fixed;
+    top:0;
+    left:0;
+    width:260px;
+    height:100vh;
+    border-radius:0 14px 14px 0;
+    z-index:999;
+  }
+  .app-shell .main {
+    margin-left:0;
+    padding:18px 12px;
+  }
+  .header {
+    left:0;
+  }
+
+  /* push header right when sidebar open in this range as well */
+  .sidebar-open .header {
+    left:260px;
+  }
+
+  /* shrink container padding and max width */
+  .container {
+    padding:16px;
+    margin:0 8px;
+    max-width: 100%;
+    border-radius:8px;
+  }
+}
+
+/* generic backdrop helper */
+.backdrop {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.4);
+  z-index:900;
+}
+
+/* ===== CONTENU PRINCIPAL ===== */
+.main{
+  padding:18px;
+  overflow-y:auto;
+  flex: 1 1 auto; /* ensure main expands in all layouts */
+  min-width:0;
+}
+
+/* ===== CONTAINER ===== */
+.container{
+  max-width:var(--max);
+  margin:0 auto;
+  background:var(--card);
+  padding:24px;
+  border-radius:16px;
+  box-shadow:var(--shadow);
+  border:1px solid rgba(255,255,255,0.15);
+}
+
+/* card improvements */
+.card{
+  background:var(--card);
+  padding:18px;
+  border-radius:16px;
+  box-shadow:var(--shadow);
+  border:1px solid rgba(255,255,255,0.1);
+  transition:transform 0.25s ease, box-shadow 0.25s ease;
+}
+.card:hover{
+  transform: translateY(-2px);
+  box-shadow:0 18px 40px rgba(0,0,0,0.12);
+}
+
+/* responsive helpers for panels */
+.panel-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:1rem;
+}
+
+/* make modal forms collapse to one column on small screens */
+.modal form {
+  display:grid;
+  grid-template-columns:1fr;
+  gap:1rem;
+}
+.modal form .col-span-2 {
+  grid-column:1 / -1;
+}
+@media (min-width: 768px) {
+  .modal form {
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+/* ===== HEADER ===== */
+.header{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px;
+  border-radius:12px;
+  background:linear-gradient(90deg,#fff,#f7fbff);
+  box-shadow:var(--shadow);
+  border:1px solid var(--glass);
+  margin-bottom:20px;
+
+  /* make header fixed at top of content with offset for sidebar */
+  position:fixed;
+  top:0;
+  left:260px; /* shift when sidebar present */
+  right:0;
+  z-index:1000;
+  transition: left .3s ease;
+}
+
+/* ensure items stack nicely when wrap occurs */
+.header-left,
+.header-right {
+  flex: 1 1 auto;
+}
+
+/* ensure pages with fixed header add top padding */
+.app-shell .main,
+.app-shell .container,
+.main > .container {
+  padding-top:100px; /* space for fixed header - increased for better spacing */
+}
+
+/* small‑screen header tweaks */
+@media (max-width: 640px) {
+  .header {
+    padding:8px;
+    left:0; /* no sidebar offset on small screens */
+  }
+
+  /* when sidebar is visible on mobile push header right so it's not hidden */
+  .sidebar-open .header {
+    left:260px;
+  }
+  .header-left img {
+    height:32px;
+    width:32px;
+  }
+  .header-left h2 {
+    font-size:1rem;
+  }
+  .header-left .muted {
+    font-size:0.75rem;
+  }
+  .header-right {
+    margin-top:8px;
+    justify-content:flex-start;
+    flex-wrap:wrap;
+  }
+  .header-right > * {
+    margin-bottom:4px;
+  }
+
+  /* adjust top padding for mobile header */
+  .app-shell .main,
+  .app-shell .container,
+  .main > .container {
+    padding-top:80px; /* less space needed for smaller mobile header */
+  }
+}
+
+/* Home-specific nav fix and background overlay will be handled in component */
+
+/* ===== BOUTON DECONNEXION ===== */
+.btn-logout{
+  background:#ef4444;
+  color:white;
+  border:none;
+  padding:8px 14px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+}
+.btn-logout:hover{
+  background:#dc2626;
+}
+
+/* ===== SIDEBAR INTERNE ===== */
+.sidebar-inner{
+  display:flex;
+  flex-direction:column;
+  height:100%;
+}
+
+/* Dark mode overrides for frequently used classes */
+html.dark .bg-white { background: var(--card) !important; }
+html.dark .bg-gray-100 { background: var(--card) !important; }
+html.dark .bg-gray-50 { background: var(--card) !important; }
+html.dark .bg-gray-200 { background: var(--card) !important; }
+html.dark .text-gray-800 { color: var(--text) !important; }
+html.dark .text-gray-900 { color: var(--text) !important; }
+html.dark .border-gray-200 { border-color: #4b5563 !important; }
+html.dark .border-gray-300 { border-color: #4b5563 !important; }
+html.dark .shadow { box-shadow: var(--shadow) !important; }
+.brand{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-bottom:12px;
+}
+.logo{
+  width:50px;
+  height:50px;
+  border-radius:10px;
+  background:linear-gradient(135deg,#ffd166,#ef476f);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+  font-size:24px;
+  overflow:hidden;
+}
+.logo img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  background:transparent;
+}
+.nav{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:12px;
+  flex:1;
+}
+.nav-link{
+  background:transparent;
+  color:var(--sidebar-text);
+  border:0;
+  padding:10px 12px;
+  text-align:left;
+  border-radius:8px;
+  cursor:pointer;
+  transition:background-color 0.3s;
+  font-size:14px;
+  font-weight:500;
+}
+.nav-link:hover{
+  background:rgba(255,255,255,0.12);
+}
+.nav-link.active{
+  background:rgba(255,255,255,0.15);
+  border-left:3px solid var(--accent);
+}
+
+/* ===== CARTES ===== */
+.card{
+  background:var(--card);
+  padding:14px;
+  border-radius:12px;
+  box-shadow:var(--shadow);
+  border:1px solid var(--glass);
+  margin-bottom:12px;
+}
+
+/* ===== GRILLE DES STATS (CORRIGÉE) ===== */
+.grid-4{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
+  gap:16px;
+  margin-top:12px;
+}
+
+/* ===== STATS ===== */
+.stat{
+  padding:16px;
+  background:linear-gradient(135deg, rgba(11,105,255,0.05), rgba(6,182,212,0.05));
+  border-left:4px solid var(--primary);
+}
+.stat-title{
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:8px;
+}
+.stat-value{
+  font-size:28px;
+  font-weight:800;
+  color:var(--primary);
+}
+
+/* ===== TABLE ===== */
+.table{
+  width:100%;
+  border-collapse:collapse;
+}
+.table th,
+.table td{
+  padding:10px 12px;
+  border-bottom:1px solid rgba(15,23,42,0.05);
+  text-align:left;
+  font-size:14px;
+}
+.table tbody tr:nth-child(odd){
+  background-color:rgba(244,246,248,0.5);
+}
+
+.table tbody tr:hover{
+  background-color:rgba(11,105,255,0.08);
+}
+
+/* dark mode overrides for tailwind utility backgrounds/ text */
+html.dark .bg-gray-100 { background-color: #374151 !important; }
+html.dark .hover\:bg-gray-50:hover { background-color: #4b5563 !important; }
+html.dark .text-gray-600 { color: #9ca3af !important; }
+html.dark .text-gray-500 { color: #9ca3af !important; }
+html.dark .bg-blue-50 { background-color: #1e3a8a !important; }
+
+/* ===== BOUTONS ===== */
+.btn{
+  background:var(--primary);
+  color:white;
+  padding:10px 14px;
+  border-radius:12px;
+  border:0;
+  cursor:pointer;
+  font-weight:600;
+  letter-spacing:0.02em;
+  text-transform:uppercase;
+  transition:transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: 0 10px 20px rgba(11,105,255,0.15);
+}
+.btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 14px 24px rgba(11,105,255,0.25);
+}
+.btn:active{
+  transform: translateY(0);
+  box-shadow: 0 8px 16px rgba(11,105,255,0.2);
+}
+.btn.outline{
+  background:transparent;
+  color:var(--primary);
+  border:1px solid rgba(11,105,255,0.3);
+}
+.btn.outline:hover{
+  background:rgba(11,105,255,0.08);
+}
+.btn:disabled,
+.btn[disabled]{
+  opacity:0.5;
+  cursor:not-allowed;
+  box-shadow:none;
+}
+
+/* ===== MODAL ===== */
+.modal-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,0.45);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+.modal-card{
+  width:720px;
+  max-width:95%;
+  background:var(--card);
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:20px;
+  border-bottom:1px solid #e5e7eb;
+}
+.modal-body{
+  max-height:70vh;
+  overflow-y:auto;
+  padding:20px;
+}
+
+/* Dark mode modal styles */
+html.dark .modal-header{
+  border-bottom-color:#4b5563;
+}
+html.dark .modal-body{
+  background:var(--card);
+}
+
+/* ===== ECRAN DE CHARGEMENT ===== */
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(11, 105, 255, 0.3);
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-screen p {
+  font-size: 18px;
+  color: var(--text);
+  margin: 0;
+}
+
+/* ===== EFFETS HOVER AMÉLIORÉS ===== */
+
+/* Boutons avec effets avancés */
+.btn-enhanced {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  border: none;
+}
+
+.btn-enhanced:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+  color: white;
+}
+
+.btn-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s;
+}
+
+.btn-enhanced:hover::before {
+  left: 100%;
+}
+
+/* Cartes avec effets avancés */
+.card-enhanced {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
+  cursor: pointer;
+  border: 3px solid transparent;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.card-enhanced:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  border-color: #06b6d4;
+  background: rgba(6, 182, 212, 0.1);
+}
+
+.card-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(255, 255, 255, 0.05));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card-enhanced:hover::before {
+  opacity: 1;
+}
+
+/* Cartes statistiques avec effets */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
+  cursor: default;
+  border: 3px solid transparent;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.stat-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.12);
+  border-color: #06b6d4;
+  background: rgba(6, 182, 212, 0.08);
+}
+
+.stat-card.danger:hover {
+  box-shadow: 0 18px 35px rgba(239, 68, 68, 0.25);
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+/* Icônes dans les cartes */
+.card-icon {
+  transition: all 0.3s ease;
+  color: #ffffff;
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.card-enhanced:hover .card-icon {
+  transform: scale(1.2) rotate(10deg);
+  color: #06b6d4;
+  filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.5));
+}
+
+/* Textes dans les cartes */
+.card-enhanced h4 {
+  transition: color 0.3s ease;
+  color: #ffffff;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.card-enhanced:hover h4 {
+  color: #06b6d4;
+}
+
+.card-enhanced p {
+  transition: color 0.3s ease;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.card-enhanced:hover p {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Boutons spécifiques avec couleurs plus visibles */
+.btn-enhanced.bg-yellow-500 {
+  background: linear-gradient(135deg, #eab308, #f59e0b);
+}
+
+.btn-enhanced.bg-yellow-500:hover {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 12px 30px rgba(234, 179, 8, 0.3);
+}
+
+.btn-enhanced.bg-green-500 {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.btn-enhanced.bg-green-500:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  box-shadow: 0 12px 30px rgba(16, 185, 129, 0.3);
+}
+
+.btn-enhanced.bg-blue-700 {
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+}
+
+.btn-enhanced.bg-blue-700:hover {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 12px 30px rgba(29, 78, 216, 0.3);
+}
+
+/* Dark mode label and placeholder styles */
+html.dark label{
+  color:var(--text);
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder{
+  color:#9ca3af;
+  opacity:0.8;
+}
+html.dark select option{
+  background:#1f2937;
+  color:var(--text);
+}
+
+/* Search bar and filter inputs styles */
+.input-search{
+  min-width:200px;
+  flex:1;
+}
+input[type="search"]{
+  width:100%;
+  padding:10px;
+  border:2px solid #e5e7eb;
+  border-radius:8px;
+  font-size:14px;
+  background:white;
+  color:#000;
+}
+html.dark input[type="search"]{
+  background:#1f2937;
+  color:var(--text);
+  border-color:#4b5563;
+}
+html.dark input[type="search"]:focus{
+  border-color:var(--primary);
+}
+
+/* Date input styles */
+input[type="date"],
+input[type="month"],
+input[type="time"]{
+  background:white;
+  color:#000;
+  border:2px solid #e5e7eb;
+}
+html.dark input[type="date"],
+html.dark input[type="month"],
+html.dark input[type="time"]{
+  background:#1f2937;
+  color:var(--text);
+  border-color:#4b5563;
+}
+
+/* ===== FORMULAIRES ===== */
+input, textarea, select{
+  width:100%;
+  padding:10px;
+  border:2px solid #e5e7eb;
+  border-radius:8px;
+  font-size:14px;
+  background:white;
+  color:#000;
+  transition:background 0.2s, border-color 0.2s, color 0.2s;
+}
+input:focus, textarea:focus, select:focus{
+  outline:none;
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(11,105,255,0.1);
+}
+
+/* Dark mode input styles */
+html.dark input,
+html.dark textarea,
+html.dark select{
+  background:#1f2937;
+  color:var(--text);
+  border-color:#4b5563;
+}
+html.dark input:focus,
+html.dark textarea:focus,
+html.dark select:focus{
+  background:#1f2937;
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(96,165,250,0.15);
+}
+
+/* ===== DARK MODE ===== */
+html.dark{
+  --bg:#0b1220;
+  --card:#0f1724;
+  --muted:#9ca3af;
+  --text:#e6eef8;
+  --primary:#60a5fa;
+  --accent:#06b6d4;
+  --glass:rgba(255,255,255,0.04);
+  --sidebar-bg:linear-gradient(180deg,#021024,#04294a);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width:900px){
+  .app-shell{
+    grid-template-columns:1fr;
+  }
+  /* sidebar visibility managed via opened/closed classes; do not hide completely */
+}
