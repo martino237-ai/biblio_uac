@@ -164,7 +164,7 @@ export default function BooksPanel({ onChange }) {
             <SearchBar
               value={localQuery}
               onChange={setLocalQuery}
-              placeholder="Rechercher titre / auteur / code..."
+              placeholder={t("Rechercher titre / auteur / code...")}
             />
           </div>
         </div>
@@ -256,18 +256,18 @@ export default function BooksPanel({ onChange }) {
         <Modal
           title={
             editing
-              ? "✏️ Modifier l'ouvrage"
-              : "📚 Ajouter un nouvel ouvrage"
+              ? t("Modifier l'ouvrage")
+              : t("Ajouter un nouvel ouvrage")
           }
         >
           <form onSubmit={submit} className="grid grid-cols-2 gap-6 p-4">
             <div className="col-span-2">
               <label className="block font-semibold mb-1">
-                Code de l'ouvrage *
+                {t("Code de l'ouvrage *")}
               </label>
               <input
                 className="w-full px-4 py-3 border rounded-lg"
-                placeholder="Ex: BK-001"
+                placeholder={t("Ex: BK-001")}
                 value={form.code}
                 onChange={(e) =>
                   setForm({ ...form, code: e.target.value })
@@ -278,11 +278,11 @@ export default function BooksPanel({ onChange }) {
 
             <div className="col-span-2">
               <label className="block font-semibold mb-1">
-                Titre de l'ouvrage *
+                {t("Titre de l'ouvrage *")}
               </label>
               <input
                 className="w-full px-4 py-3 border rounded-lg"
-                placeholder="Titre de l'ouvrage"
+                placeholder={t("Titre de l'ouvrage")}
                 value={form.titre}
                 onChange={(e) =>
                   setForm({ ...form, titre: e.target.value })
@@ -293,11 +293,11 @@ export default function BooksPanel({ onChange }) {
 
             <div>
               <label className="block font-semibold mb-1">
-                Auteur
+                {t("Auteur")}
               </label>
               <input
                 className="w-full px-4 py-3 border rounded-lg"
-                placeholder="Nom de l'auteur"
+                placeholder={t("Auteur")}
                 value={form.auteur}
                 onChange={(e) =>
                   setForm({ ...form, auteur: e.target.value })
@@ -307,11 +307,11 @@ export default function BooksPanel({ onChange }) {
 
             <div>
               <label className="block font-semibold mb-1">
-                Éditeur
+                {t("Éditeur")}
               </label>
               <input
                 className="w-full px-4 py-3 border rounded-lg"
-                placeholder="Nom de l'éditeur"
+                placeholder={t("Éditeur")}
                 value={form.editeur}
                 onChange={(e) =>
                   setForm({ ...form, editeur: e.target.value })
@@ -321,12 +321,12 @@ export default function BooksPanel({ onChange }) {
 
             <div>
               <label className="block font-semibold mb-1">
-                Année de publication
+                {t("Année de publication")}
               </label>
               <input
                 type="number"
                 className="w-full px-4 py-3 border rounded-lg"
-                placeholder="Ex: 2023"
+                placeholder={t("Ex: 2023")}
                 value={form.annee_publication}
                 onChange={(e) =>
                   setForm({ ...form, annee_publication: e.target.value })
@@ -336,11 +336,11 @@ export default function BooksPanel({ onChange }) {
 
             <div>
               <label className="block font-semibold mb-1">
-                Édition
+                {t("Édition")}
               </label>
               <input
                 className="w-full px-4 py-3 border rounded-lg"
-                placeholder="Ex: 1ère édition"
+                placeholder={t("Ex: 1ère édition")}
                 value={form.edition}
                 onChange={(e) =>
                   setForm({ ...form, edition: e.target.value })
@@ -350,11 +350,11 @@ export default function BooksPanel({ onChange }) {
 
             <div>
               <label className="block font-semibold mb-1">
-                Langue
+                {t("Langue")}
               </label>
               <input
                 className="w-full px-4 py-3 border rounded-lg"
-                placeholder="Ex: Français"
+                placeholder={t("Ex: Français")}
                 value={form.langue}
                 onChange={(e) =>
                   setForm({ ...form, langue: e.target.value })
@@ -364,12 +364,12 @@ export default function BooksPanel({ onChange }) {
 
             <div>
               <label className="block font-semibold mb-1">
-                Nombre de pages
+                {t("Nombre de pages")}
               </label>
               <input
                 type="number"
                 className="w-full px-4 py-3 border rounded-lg"
-                placeholder="Ex: 300"
+                placeholder={t("Ex: 300")}
                 value={form.nombre_pages}
                 onChange={(e) =>
                   setForm({ ...form, nombre_pages: e.target.value })
@@ -379,12 +379,12 @@ export default function BooksPanel({ onChange }) {
 
             <div>
               <label className="block font-semibold mb-1">
-                Genre d'ouvrage
+                {t("Genre d'ouvrage")}
               </label>
               <input
                 list="genre-options"
                 className="w-full px-4 py-3 border rounded-lg"
-                placeholder="Sélectionner ou saisir le genre"
+                placeholder={t("Sélectionner ou saisir le genre")}
                 value={form.genre}
                 onChange={(e) =>
                   setForm({ ...form, genre: e.target.value })

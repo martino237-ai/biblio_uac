@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import api from "../api/axios";
 import Modal from "../shared/Modal";
 import SearchBar from "../shared/SearchBar";
@@ -7,6 +8,7 @@ import ReaderDetailsPanel from "./ReaderDetailsPanel";
 import { FACULTY_OPTIONS, getFiliereOptions } from "../utils/faculties";
 
 export default function ReadersPanel({ onChange }) {
+  const { t } = useTranslation();
   const [readers, setReaders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [localQuery, setLocalQuery] = useState('');
@@ -43,7 +45,7 @@ export default function ReadersPanel({ onChange }) {
       setReaders(res.data || []);
     } catch (err) {
       console.error(err);
-      alert("Erreur chargement des lecteurs");
+      alert(t("Erreur chargement des lecteurs"));
     } finally {
       setLoading(false);
     }
@@ -95,7 +97,7 @@ export default function ReadersPanel({ onChange }) {
   }
 
   async function remove(id) {
-    if (!window.confirm("Supprimer ce lecteur ?")) return;
+    if (!window.confirm(t("Supprimer ce lecteur ?"))) return;
 
     try {
       await api.delete(`/readers/${id}`);
@@ -103,7 +105,7 @@ export default function ReadersPanel({ onChange }) {
       onChange && onChange();
     } catch (err) {
       console.error(err);
-      alert("Erreur suppression");
+      alert(t("Erreur suppression"));
     }
   }
 
@@ -113,16 +115,16 @@ export default function ReadersPanel({ onChange }) {
       <div className="panel-header flex justify-between items-center mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:gap-4">
           <div>
-            <h2 className="text-2xl font-bold dark:text-white">👥 Gestion des lecteurs</h2>
+            <h2 className="text-2xl font-bold dark:text-white">👥 {t('Gestion des lecteurs')}</h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Cliquez sur une ligne pour voir les détails
+              {t('Cliquez sur une ligne pour voir les détails')}
             </p>
           </div>
           <div className="mt-2 md:mt-0">
             <SearchBar
               value={localQuery}
               onChange={setLocalQuery}
-              placeholder="Rechercher nom / matricule..."
+              placeholder={t("Rechercher nom / matricule...")}
             />
           </div>
         </div>
@@ -131,30 +133,30 @@ export default function ReadersPanel({ onChange }) {
           className="px-6 py-3 bg-blue-600 dark:bg-blue-700 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 dark:hover:bg-blue-600 transition"
           onClick={openNew}
         >
-          ➕ Nouveau lecteur
+          ➕ {t('Nouveau lecteur')}
         </button>
       </div>
 
       {/* TABLEAU */}
       <div className="card mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 dark:text-white">
         {loading ? (
-          <div className="text-center dark:text-gray-300">Chargement des lecteurs...</div>
+          <div className="text-center dark:text-gray-300">{t('Chargement des lecteurs...')}</div>
         ) : readers.length === 0 ? (
-          <p className="text-center text-gray-500 dark:text-gray-400">Aucun lecteur trouvé</p>
+          <p className="text-center text-gray-500 dark:text-gray-400">{t('Aucun lecteur trouvé')}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead className="bg-gray-100 dark:bg-gray-700">
                 <tr>
-                  <th className="p-3 border dark:border-gray-600 dark:text-white">Matricule</th>
-                  <th className="p-3 border dark:border-gray-600 dark:text-white">Nom</th>
-                  <th className="p-3 border dark:border-gray-600 dark:text-white">Prénom</th>
-                  <th className="p-3 border dark:border-gray-600 dark:text-white">Type</th>
-                  <th className="p-3 border dark:border-gray-600 dark:text-white">Faculté</th>
-                  <th className="p-3 border dark:border-gray-600 dark:text-white">Filière</th>
-                  <th className="p-3 border dark:border-gray-600 dark:text-white">Niveau</th>
-                  <th className="p-3 border dark:border-gray-600 dark:text-white">Téléphone</th>
-                  <th className="p-3 border dark:border-gray-600 dark:text-white">Actions</th>
+                  <th className="p-3 border dark:border-gray-600 dark:text-white">{t('Matricule')}</th>
+                  <th className="p-3 border dark:border-gray-600 dark:text-white">{t('Nom')}</th>
+                  <th className="p-3 border dark:border-gray-600 dark:text-white">{t('Prénom')}</th>
+                  <th className="p-3 border dark:border-gray-600 dark:text-white">{t('Type')}</th>
+                  <th className="p-3 border dark:border-gray-600 dark:text-white">{t('Faculté')}</th>
+                  <th className="p-3 border dark:border-gray-600 dark:text-white">{t('Filière')}</th>
+                  <th className="p-3 border dark:border-gray-600 dark:text-white">{t('Niveau')}</th>
+                  <th className="p-3 border dark:border-gray-600 dark:text-white">{t('Téléphone')}</th>
+                  <th className="p-3 border dark:border-gray-600 dark:text-white">{t('Actions')}</th>
                 </tr>
               </thead>
 
@@ -213,7 +215,7 @@ export default function ReadersPanel({ onChange }) {
 
       {modal && (
   <Modal
-    title={editing ? "✏️ Modifier lecteur" : "👥 Ajouter lecteur"}
+    title={editing ? "✏️ {t('Modifier lecteur')}" : "👥 {t('Ajouter lecteur')}"}
     onClose={() => setModal(false)}
   >
     <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 dark:text-white">

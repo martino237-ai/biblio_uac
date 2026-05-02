@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import api from "../api/axios";
 import ExportButton from '../shared/ExportButton';
 
 export default function ActivitiesPanel() {
+  const { t } = useTranslation();
   const [logs, setLogs] = useState([]);
   const [filter, setFilter] = useState('');
   const [expandedRows, setExpandedRows] = useState({});
@@ -62,7 +64,7 @@ export default function ActivitiesPanel() {
 
   const formatDate = (raw) => {
     const dt = new Date(raw);
-    if (isNaN(dt)) return new Date().toLocaleString();
+    if (isNaN(dt)) return raw ? String(raw) : '-';
     return dt.toLocaleString('fr-FR', {
       day: '2-digit',
       month: '2-digit',
@@ -198,7 +200,7 @@ export default function ActivitiesPanel() {
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
           </svg>
-          Non renseigné
+          {t('Non renseigné')}
         </span>
       );
     }
@@ -208,7 +210,7 @@ export default function ActivitiesPanel() {
       return (
         <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium ${val ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${val ? 'bg-green-500' : 'bg-red-500'}`} />
-          {val ? 'Oui' : 'Non'}
+          {val ? t('Oui') : t('Non')}
         </span>
       );
     }
@@ -230,7 +232,7 @@ export default function ActivitiesPanel() {
       // Ignorer les chaînes vides
       if (val.trim() === '') {
         return (
-          <span className="text-gray-400 italic text-xs">Chaîne vide</span>
+          <span className="text-gray-400 italic text-xs">{t('Chaîne vide')}</span>
         );
       }
 

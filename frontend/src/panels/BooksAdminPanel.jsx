@@ -86,8 +86,8 @@ export default function BooksAdminPanel() {
       {/* Header Section */}
       <div className="panel-header">
         <div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">📚 Gestion des Ouvrages</h2>
-          <p className="text-gray-600">Gérez le catalogue des livres de la bibliothèque</p>
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">📚 {t('Gestion des ouvrages')}</h2>
+          <p className="text-gray-600">{t('Gérez le catalogue des livres de la bibliothèque')}</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}

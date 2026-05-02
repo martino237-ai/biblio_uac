@@ -8,7 +8,8 @@ const Activity = sequelize.define('Activity', {
   details: { type: DataTypes.TEXT, allowNull: true }
 }, {
   tableName: 'activities',
-  timestamps: false
+  timestamps: true,
+  underscored: true
 });
 
 module.exports = Activity;

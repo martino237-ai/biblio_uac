@@ -103,18 +103,17 @@ export default function ConsultationsPanel({ query = '', onChange }) {
 
   const exportToPDF = () => {
     if(consults.length === 0) {
-      alert('Aucune consultation a exporter');
+      alert(t('Aucune consultation a exporter'));
       return;
     }
-    // Transformer les données
     const data = consults.map(c => ({
       '#': c.id,
-      'Lecteur': c.Reader ? `${c.Reader.nom} ${c.Reader.prenom}` : c.lecteur_id,
-      'Faculté': c.Reader?.faculte || '-',
-      'Filière': c.Reader?.filiere || '-',
-      'Livre': c.Book ? c.Book.titre : '-',
-      'Debut': c.heure_debut ? new Date(c.heure_debut).toLocaleString('fr-FR') : '-',
-      'Fin': c.heure_fin ? new Date(c.heure_fin).toLocaleString('fr-FR') : '-'
+      [t('Lecteur')]: c.Reader ? `${c.Reader.nom} ${c.Reader.prenom}` : c.lecteur_id,
+      [t('Faculté')]: c.Reader?.faculte || '-',
+      [t('Filière')]: c.Reader?.filiere || '-',
+      [t('Livre')]: c.Book ? c.Book.titre : '-',
+      [t('Debut')]: c.heure_debut ? new Date(c.heure_debut).toLocaleString('fr-FR') : '-',
+      [t('Fin')]: c.heure_fin ? new Date(c.heure_fin).toLocaleString('fr-FR') : '-'
     }));
 
     const title = startDate && endDate 
@@ -128,7 +127,7 @@ export default function ConsultationsPanel({ query = '', onChange }) {
       title,
       org: 'Bibliotheque UAC',
       address: 'Universite Adventiste Cosendai',
-      columns: ['#', 'Lecteur', 'Faculté', 'Filière', 'Livre', 'Debut', 'Fin'],
+      columns: ['#', t('Lecteur'), t('Faculté'), t('Filière'), t('Livre'), t('Debut'), t('Fin')],
       orientation: 'landscape'
     });
   };
@@ -171,15 +170,13 @@ export default function ConsultationsPanel({ query = '', onChange }) {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead className="bg-gray-100">
-              <tr>
-                <th className="p-3 border">Lecteur</th>
-                <th className="p-3 border">Faculté</th>
-                <th className="p-3 border">Filière</th>
-                <th className="p-3 border">Livre</th>
-                <th className="p-3 border">Début</th>
-                <th className="p-3 border">Fin</th>
-                <th className="p-3 border">Action</th>
-              </tr>
+                <th className="p-3 border">{t('Lecteur')}</th>
+                <th className="p-3 border">{t('Faculté')}</th>
+                <th className="p-3 border">{t('Filière')}</th>
+                <th className="p-3 border">{t('Livre')}</th>
+                <th className="p-3 border">{t('Début')}</th>
+                <th className="p-3 border">{t('Fin')}</th>
+                <th className="p-3 border">{t('Action')}</th>
             </thead>
             <tbody>
               {consults.map(c => (
@@ -202,7 +199,7 @@ export default function ConsultationsPanel({ query = '', onChange }) {
                         className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700"
                         onClick={e => { e.stopPropagation(); endConsultation(c.id); }}
                       >
-                        Terminer
+                        {t('Terminer')}
                       </button>
                     ) : '-'}
                   </td>
@@ -215,7 +212,7 @@ export default function ConsultationsPanel({ query = '', onChange }) {
 
       {/* Modal Formulaire */}
       {modal && (
-        <Modal title="Nouvelle consultation" onClose={() => setModal(false)}>
+        <Modal title={t('Nouvelle consultation')} onClose={() => setModal(false)}>
           <form className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4" onSubmit={create}>
             <div className="md:col-span-2">
               <label className="block font-semibold mb-1">Lecteur</label>
@@ -240,7 +237,7 @@ export default function ConsultationsPanel({ query = '', onChange }) {
 
             <div className="md:col-span-2 grid grid-cols-1 gap-4">
               <div>
-                <label className="block font-semibold mb-1">Type de document</label>
+                <label className="block font-semibold mb-1">{t('Type de document')}</label>
                 <select
                   className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
                   value={itemType}

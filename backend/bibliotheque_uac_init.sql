@@ -80,7 +80,8 @@ CREATE TABLE IF NOT EXISTS users (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(150) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
-  role ENUM('bibliothecaire','directeur') DEFAULT 'bibliothecaire',
+  email VARCHAR(150) UNIQUE,
+  role ENUM('bibliothecaire','directeur','lecteur') DEFAULT 'bibliothecaire',
   nom VARCHAR(150),
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

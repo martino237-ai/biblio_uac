@@ -13,5 +13,9 @@ router.post('/register-reader', authCtrl.registerReader);
 router.get('/users', authenticateToken, requireRole(['bibliothecaire','directeur']), authCtrl.getAllUsers);
 // only directeur can delete other users
 router.delete('/users/:id', authenticateToken, requireRole(['directeur']), authCtrl.deleteUser);
+// only directeur can update other users
+router.put('/users/:id', authenticateToken, requireRole(['directeur']), authCtrl.updateUser);
+// users can update their own profile
+router.put('/profile', authenticateToken, authCtrl.updateProfile);
 
 module.exports = router;

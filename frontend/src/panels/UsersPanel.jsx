@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
 import Modal from '../shared/Modal';
 import SearchBar from '../shared/SearchBar';
 import { FACULTY_OPTIONS, getFiliereOptions } from '../utils/faculties';
 
 export default function UsersPanel({ onChange }) {
+  const { t } = useTranslation();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [localQuery, setLocalQuery] = useState('');
@@ -116,19 +118,19 @@ export default function UsersPanel({ onChange }) {
     } catch (err) {
       console.error(err);
       const msg = err?.response?.data?.error || err.message;
-      alert('Erreur sauvegarde : ' + msg);
+      alert(t('Erreur sauvegarde :') + ' ' + msg);
     }
   }
 
   async function remove(id) {
-    if (!window.confirm('Supprimer cet utilisateur ?')) return;
+    if (!window.confirm(t('Supprimer cet utilisateur ?'))) return;
     try {
       await api.delete(`/auth/users/${id}`);
       fetchUsers();
       onChange && onChange();
     } catch (err) {
       console.error(err);
-      alert('Erreur suppression');
+      alert(t('Erreur suppression'));
     }
   }
 
@@ -138,9 +140,9 @@ export default function UsersPanel({ onChange }) {
       <div className="panel-header flex justify-between items-center mb-6">
         <div className="flex flex-col md:flex-row md:items-center md:gap-4">
           <div>
-            <h2 className="text-2xl font-bold dark:text-white">👥 Gestion des utilisateurs</h2>
+            <h2 className="text-2xl font-bold dark:text-white">👥 {t('Gestion des utilisateurs')}</h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Cliquez sur une ligne pour voir les détails
+              {t('Cliquez sur une ligne pour voir les détails')}
             </p>
           </div>
           <div className="mt-2 md:mt-0">
@@ -232,7 +234,7 @@ export default function UsersPanel({ onChange }) {
           title={
             editing
               ? "✏️ Modifier l'utilisateur"
-              : "👥 Ajouter un nouvel utilisateur"
+              : "👥 {t('Ajouter un nouvel utilisateur')}"
           }
         >
           <form onSubmit={submit} className="grid grid-cols-2 gap-6 p-4">
@@ -259,6 +261,19 @@ export default function UsersPanel({ onChange }) {
                 value={form.nom}
                 onChange={(e) => setForm({ ...form, nom: e.target.value })}
                 required
+              />
+            </div>
+
+            <div className="col-span-2">
+              <label className="block font-semibold mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                className="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 dark:text-white"
+                placeholder="Email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
             </div>
 

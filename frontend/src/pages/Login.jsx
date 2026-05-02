@@ -143,7 +143,7 @@ export default function Login(){
               disabled={loading}
               className="w-full py-3 bg-green-700 hover:bg-green-800 text-white font-bold rounded-lg transition duration-300 btn-enhanced"
             >
-              Créer un compte
+              {t('Créer un compte')}
             </button>
           </form>
 

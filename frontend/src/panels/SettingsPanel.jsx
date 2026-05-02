@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import api from '../api/axios';
 
 export default function SettingsPanel() {
+  const { t, i18n } = useTranslation();
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const [language, setLanguage] = useState(localStorage.getItem('lang') || 'fr');
   const [notifications, setNotifications] = useState(
@@ -13,6 +16,8 @@ export default function SettingsPanel() {
   const [user, setUser] = useState({});
   const [activeSection, setActiveSection] = useState('profile');
   const [showSaveAlert, setShowSaveAlert] = useState(false);
+  const [profileForm, setProfileForm] = useState({ nom: '', email: '', password: '' });
+  const [savingProfile, setSavingProfile] = useState(false);
 
   useEffect(() => {
     // Rôle de l'utilisateur pour afficher les bons paramètres
@@ -25,6 +30,8 @@ export default function SettingsPanel() {
       setUser({});
     }
 
+    setProfileForm({ nom: user.nom || '', email: user.email || '', password: '' });
+
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
@@ -35,7 +42,13 @@ export default function SettingsPanel() {
     localStorage.setItem('lang', language);
     localStorage.setItem('notifications', JSON.stringify(notifications));
     localStorage.setItem('autoSave', JSON.stringify(autoSave));
-  }, [theme, language, notifications, autoSave]);
+
+    if (i18n.language !== language) {
+      i18n.changeLanguage(language);
+    }
+
+    window.dispatchEvent(new CustomEvent('app-theme-change', { detail: { theme } }));
+  }, [theme, language, notifications, autoSave, i18n, user.nom, user.email]);
 
   const handleReset = () => {
     setTheme('light');
@@ -47,30 +60,89 @@ export default function SettingsPanel() {
     setTimeout(() => setShowSaveAlert(false), 3000);
   };
 
+  const saveProfile = async () => {
+    setSavingProfile(true);
+    try {
+      const payload = {};
+      if (profileForm.nom !== user.nom) payload.nom = profileForm.nom;
+      if (profileForm.email !== user.email) payload.email = profileForm.email;
+      if (profileForm.password) payload.password = profileForm.password;
+
+      if (Object.keys(payload).length === 0) {
+        alert(t('Aucune modification détectée'));
+        return;
+      }
+
+      const res = await api.put('/auth/profile', payload);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      localStorage.setItem('token', res.data.token);
+      setUser(res.data.user);
+      setProfileForm({ ...profileForm, password: '' });
+      setShowSaveAlert(true);
+      setTimeout(() => setShowSaveAlert(false), 3000);
+    } catch (err) {
+      console.error(err);
+      alert(t('Erreur lors de la sauvegarde du profil'));
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
   const renderProfile = () => (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-          <span className="text-2xl">👤</span>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+            <span className="text-2xl">👤</span>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">{t('Profil')}</h2>
         </div>
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Profil</h2>
+        <button
+          onClick={saveProfile}
+          disabled={savingProfile}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+        >
+          {savingProfile ? t('Sauvegarde...') : `💾 ${t('Sauvegarder')}`}
+        </button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Nom d'utilisateur</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{t("Nom d'utilisateur")}</p>
           <p className="text-lg font-medium text-gray-800 dark:text-white">{user.username || '-'}</p>
         </div>
         <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Rôle</p>
-          <p className="text-lg font-medium text-gray-800 dark:text-white">{role === 'directeur' ? 'Directeur' : 'Bibliothécaire'}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{t('Rôle')}</p>
+          <p className="text-lg font-medium text-gray-800 dark:text-white">{role === 'directeur' ? t('Directeur') : role === 'bibliothecaire' ? t('Bibliothécaire') : t('Lecteur')}</p>
         </div>
         <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Nom complet</p>
-          <p className="text-lg font-medium text-gray-800 dark:text-white">{user.nom || '-'}</p>
+          <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">{t('Nom complet')}</label>
+          <input
+            type="text"
+            value={profileForm.nom}
+            onChange={(e) => setProfileForm({ ...profileForm, nom: e.target.value })}
+            className="w-full px-3 py-2 border rounded-lg dark:bg-gray-600 dark:text-white"
+            placeholder={t('Votre nom complet')}
+          />
         </div>
         <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Email</p>
-          <p className="text-lg font-medium text-gray-800 dark:text-white">{user.email || '-'}</p>
+          <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">{t('Email')}</label>
+          <input
+            type="email"
+            value={profileForm.email}
+            onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+            className="w-full px-3 py-2 border rounded-lg dark:bg-gray-600 dark:text-white"
+            placeholder={t('Votre email')}
+          />
+        </div>
+        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 md:col-span-2">
+          <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">{t('Nouveau mot de passe (laisser vide pour ne pas changer)')}</label>
+          <input
+            type="password"
+            value={profileForm.password}
+            onChange={(e) => setProfileForm({ ...profileForm, password: e.target.value })}
+            className="w-full px-3 py-2 border rounded-lg dark:bg-gray-600 dark:text-white"
+            placeholder={t('Nouveau mot de passe')}
+          />
         </div>
       </div>
     </div>
@@ -82,12 +154,12 @@ export default function SettingsPanel() {
         <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
           <span className="text-2xl">🌐</span>
         </div>
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Langue</h2>
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">{t('Langue')}</h2>
       </div>
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-            Langue de l'interface
+            {t('Langue')}
           </label>
           <div className="relative">
             <select
@@ -116,12 +188,12 @@ export default function SettingsPanel() {
         <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
           <span className="text-2xl">🎨</span>
         </div>
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Thème</h2>
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">{t('Thème')}</h2>
       </div>
       <div className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-            Thème de l'interface
+            {t("Thème de l'interface")}
           </label>
           <div className="flex flex-wrap gap-3">
             <button
@@ -134,7 +206,7 @@ export default function SettingsPanel() {
             >
               <div className="flex items-center justify-center gap-2">
                 <span className="text-xl">☀️</span>
-                <span className="font-medium">Mode clair</span>
+                <span className="font-medium">{t('Mode clair')}</span>
               </div>
             </button>
 
@@ -148,7 +220,7 @@ export default function SettingsPanel() {
             >
               <div className="flex items-center justify-center gap-2">
                 <span className="text-xl">🌙</span>
-                <span className="font-medium">Mode sombre</span>
+                <span className="font-medium">{t('Mode sombre')}</span>
               </div>
             </button>
           </div>
@@ -163,23 +235,23 @@ export default function SettingsPanel() {
         <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
           <span className="text-2xl">ℹ️</span>
         </div>
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">À propos</h2>
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">{t('À propos')}</h2>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Nom de l'application</p>
-          <p className="text-lg font-medium text-gray-800 dark:text-white">Bibliothèque UAC</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{t("Nom de l'application")}</p>
+          <p className="text-lg font-medium text-gray-800 dark:text-white">{t('Bibliothèque UAC')}</p>
         </div>
         <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Version</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{t('Version')}</p>
           <p className="text-lg font-medium text-gray-800 dark:text-white">1.0.0</p>
         </div>
         <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Auteur</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{t('Auteur')}</p>
           <p className="text-lg font-medium text-gray-800 dark:text-white">martin's.org</p>
         </div>
         <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Contact</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{t('Contact')}</p>
           <a
             href="mailto:martino23700@gmail.com"
             className="text-lg font-medium text-blue-600 dark:text-blue-400 hover:underline"
@@ -214,7 +286,7 @@ export default function SettingsPanel() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            <span className="font-medium">Paramètres réinitialisés avec succès</span>
+            <span className="font-medium">{t('Paramètres réinitialisés avec succès')}</span>
           </div>
         </div>
       )}
@@ -222,13 +294,13 @@ export default function SettingsPanel() {
       <div className="max-w-4xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <aside className="md:col-span-1 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-lg font-semibold mb-4">Paramètres</h2>
+            <h2 className="text-lg font-semibold mb-4">{t('Paramètres')}</h2>
             <nav className="space-y-2">
               {[
-                { id: 'profile', label: 'Profil' },
-                { id: 'language', label: 'Langue' },
-                { id: 'theme', label: 'Thème' },
-                { id: 'about', label: 'À propos' },
+                { id: 'profile', label: t('Profil') },
+                { id: 'language', label: t('Langue') },
+                { id: 'theme', label: t('Thème') },
+                { id: 'about', label: t('À propos') },
               ].map((item) => (
                 <button
                   key={item.id}
@@ -255,12 +327,12 @@ export default function SettingsPanel() {
                   onClick={handleReset}
                   className="px-6 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-medium"
                 >
-                  Réinitialiser
+                  {t('Réinitialiser')}
                 </button>
                 <button
                   className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-colors font-medium shadow-lg shadow-blue-500/25"
                 >
-                  Enregistrer les modifications
+                  {t('Enregistrer les modifications')}
                 </button>
               </div>
             </div>

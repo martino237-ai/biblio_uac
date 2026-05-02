@@ -120,21 +120,21 @@ export default function LoansPanel({ query = '', onChange }) {
 
   const exportToPDF = () => {
     if (loans.length === 0) {
-      alert('Aucun emprunt a exporter');
+      alert(t('Aucun emprunt a exporter'));
       return;
     }
-    // Transformer les données
     const data = loans.map(l => ({
       '#': l.id,
-      'Lecteur': l.Reader ? `${l.Reader.nom} ${l.Reader.prenom}` : l.lecteur_id,
-      'Faculté': l.Reader?.faculte || '-',
-      'Filière': l.Reader?.filiere || '-',
-      'Livre': l.Book ? l.Book.titre : l.livre_id,
-      'Type': l.type_emprunt === 'prolonge' ? 'Prolongé' : l.type_emprunt === 'limite' ? 'Limité' : 'Normal',
-      'Date debut': l.date_emprunt || '-',
-      'Date retour': l.date_retour_prevue || '-',
-      'Date retour effective': l.date_retour_effective || '-',
-      'Statut': l.statut || '-'
+      [t('Lecteur')]: l.Reader ? `${l.Reader.nom} ${l.Reader.prenom}` : l.lecteur_id,
+      [t('Faculté')]: l.Reader?.faculte || '-',
+      [t('Filière')]: l.Reader?.filiere || '-',
+      [t('Livre')]: l.Book ? l.Book.titre : l.livre_id,
+      [t('Type')]: l.type_emprunt === 'prolonge' ? t('Prolongé') : l.type_emprunt === 'limite' ? t('Limité') : t('Normal'),
+      [t('Date emprunt')]: l.date_emprunt || '-',
+      [t('Date retour prévu')]: l.date_retour_prevue || '-',
+      [t('Date retour effectif')]: l.date_retour_effective || '-',
+      [t('Prolongations')]: l.prolongations || 0,
+      [t('Statut')]: l.statut === 'en_retard' ? t('En retard') : l.statut || '-'
     }));
 
     const title = startDate && endDate
@@ -148,7 +148,7 @@ export default function LoansPanel({ query = '', onChange }) {
       title,
       org: 'Bibliotheque UAC',
       address: 'Universite Adventiste Cosendai',
-      columns: ['#', 'Lecteur', 'Faculté', 'Filière', 'Livre', 'Type', 'Date debut', 'Date retour', 'Date retour effective', 'Statut'],
+      columns: ['#', t('Lecteur'), t('Faculté'), t('Filière'), t('Livre'), t('Type'), t('Date emprunt'), t('Date retour prévu'), t('Date retour effectif'), t('Prolongations'), t('Statut')],
       orientation: 'landscape'
     });
   };
@@ -206,6 +206,8 @@ export default function LoansPanel({ query = '', onChange }) {
           <thead className="bg-gray-100">
             <tr>
               <th className="p-3 border">{t('Lecteur')}</th>
+              <th className="p-3 border">{t('Faculté')}</th>
+              <th className="p-3 border">{t('Filière')}</th>
               <th className="p-3 border">{t('Livre')}</th>
               <th className="p-3 border">{t("Type d'emprunt")}</th>
               <th className="p-3 border">{t('Date emprunt')}</th>
