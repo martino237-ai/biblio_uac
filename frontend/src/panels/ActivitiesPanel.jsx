@@ -289,7 +289,7 @@ export default function ActivitiesPanel() {
     if (Array.isArray(val)) {
       if (val.length === 0) {
         return (
-          <span className="text-gray-400 italic text-xs">Tableau vide</span>
+          <span className="text-gray-400 italic text-xs">{t('Tableau vide')}</span>
         );
       }
 
@@ -316,7 +316,7 @@ export default function ActivitiesPanel() {
       
       if (entries.length === 0) {
         return (
-          <span className="text-gray-400 italic text-xs">Objet vide</span>
+          <span className="text-gray-400 italic text-xs">{t('Objet vide')}</span>
         );
       }
 
@@ -328,7 +328,7 @@ export default function ActivitiesPanel() {
         <div className="space-y-2">
           {hasName && (
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-medium text-green-600">Détails</span>
+              <span className="text-xs font-medium text-green-600">{t('Détails')}</span>
             </div>
           )}
           <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200 overflow-hidden">
@@ -466,7 +466,7 @@ export default function ActivitiesPanel() {
                       <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      {formatDate(l.created_at || l.date)}
+                      {formatDate(l.createdAt || l.created_at || l.date || l.updatedAt)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -490,9 +490,9 @@ export default function ActivitiesPanel() {
                             className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors"
                           >
                             {isExpanded ? (
-                              <>Masquer <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg></>
+                              <>{t('Masquer')} <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg></>
                             ) : (
-                              <>Voir détails <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg></>
+                              <>{t('Voir détails')} <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg></>
                             )}
                           </button>
                         </div>
@@ -525,8 +525,8 @@ export default function ActivitiesPanel() {
                     <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <p className="text-lg font-medium">Aucune activité trouvée</p>
-                    <p className="text-sm">Les nouvelles activités apparaîtront ici</p>
+                    <p className="text-lg font-medium">{t('Aucune activité trouvée')}</p>
+                    <p className="text-sm">{t('Les nouvelles activités apparaîtront ici')}</p>
                   </div>
                 </td>
               </tr>

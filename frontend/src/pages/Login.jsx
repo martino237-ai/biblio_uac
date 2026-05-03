@@ -46,10 +46,10 @@ export default function Login(){
         redirectPath = '/librarian';
       }
       
-      // Attendre 2 secondes puis rediriger
+      // Attendre 1 seconde puis rediriger
       setTimeout(() => {
         window.location = redirectPath;
-      }, 2000);
+      }, 1000);
 
     } catch(err){
       setError(

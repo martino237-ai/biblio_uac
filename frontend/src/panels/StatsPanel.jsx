@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
 import { 
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer, 
@@ -17,6 +18,7 @@ import { generateStatsPDF, addPDFFooter } from '../utils/pdfGenerator';
 const COLORS = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6'];
 
 export default function StatsDashboard() {
+  const { t } = useTranslation();
 
   const [summary, setSummary] = useState({
     books: 0,
@@ -266,15 +268,15 @@ export default function StatsDashboard() {
       <div className="panel-header">
         <div>
           <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-3">
-            <Activity className="text-blue-600"/> Tableau de Bord Statistiques
+            <Activity className="text-blue-600"/> {t('Tableau de Bord Statistiques')}
           </h2>
         </div>
 
         <div className="flex gap-3">
-          <button onClick={()=>setShowFilters(!showFilters)} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 rounded-lg transition duration-300 btn-enhanced"><Filter size={18}/> Filtres</button>
-          <button onClick={loadAll} className="px-4 py-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 dark:hover:bg-blue-800 rounded-lg transition duration-300 btn-enhanced"><RefreshCw size={18}/> Actualiser</button>
-          <button onClick={exportToExcel} className="px-4 py-2 bg-green-600 hover:bg-green-700 dark:bg-green-700 text-white dark:hover:bg-green-600 rounded-lg transition duration-300 btn-enhanced"><DownloadCloud size={18}/> Excel</button>
-          <button onClick={exportToPDF} className="px-4 py-2 bg-red-600 hover:bg-red-700 dark:bg-red-700 text-white dark:hover:bg-red-600 rounded-lg transition duration-300 btn-enhanced"><FileText size={18}/> PDF</button>
+          <button onClick={()=>setShowFilters(!showFilters)} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 rounded-lg transition duration-300 btn-enhanced"><Filter size={18}/> {t('Filtres')}</button>
+          <button onClick={loadAll} className="px-4 py-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 dark:hover:bg-blue-800 rounded-lg transition duration-300 btn-enhanced"><RefreshCw size={18}/> {t('Actualiser')}</button>
+          <button onClick={exportToExcel} className="px-4 py-2 bg-green-600 hover:bg-green-700 dark:bg-green-700 text-white dark:hover:bg-green-600 rounded-lg transition duration-300 btn-enhanced"><DownloadCloud size={18}/> {t('Excel')}</button>
+          <button onClick={exportToPDF} className="px-4 py-2 bg-red-600 hover:bg-red-700 dark:bg-red-700 text-white dark:hover:bg-red-600 rounded-lg transition duration-300 btn-enhanced"><FileText size={18}/> {t('PDF')}</button>
         </div>
       </div>
 
@@ -292,7 +294,7 @@ export default function StatsDashboard() {
                setDateRange({ start: new Date().toISOString().split('T')[0], end: new Date().toISOString().split('T')[0] });
             }}
             className={`px-3 py-1 rounded transition duration-300 btn-enhanced ${filterPeriod==='jour' ? 'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600'}`}
-          >Aujourd'hui</button>
+          >{t('Aujourd\'hui')}</button>
 
           <button
             onClick={()=>{
@@ -304,12 +306,12 @@ export default function StatsDashboard() {
                });
             }}
             className={`px-3 py-1 rounded transition duration-300 btn-enhanced ${filterPeriod==='mois' ? 'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600'}`}
-          >Ce mois</button>
+          >{t('Ce mois')}</button>
 
           {/* date range inputs */}
-          <label className="text-sm dark:text-gray-300">Du :</label>
+          <label className="text-sm dark:text-gray-300">{t('Du :')}</label>
           <input type="date" className="border px-2 py-1 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" value={dateRange.start} onChange={e=>setDateRange({...dateRange,start:e.target.value})} />
-          <label className="text-sm dark:text-gray-300">Au :</label>
+          <label className="text-sm dark:text-gray-300">{t('Au :')}</label>
           <input type="date" className="border px-2 py-1 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" value={dateRange.end} onChange={e=>setDateRange({...dateRange,end:e.target.value})} />
         </div>
       )}
@@ -317,20 +319,20 @@ export default function StatsDashboard() {
       {/* CARTES RÉSUMÉ */}
       <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
         {/* ensure we have numbers, if summary missing show dash */}
-        <div className="bg-blue-50 dark:bg-blue-900 dark:text-white p-6 rounded-xl"><p className="dark:text-gray-300">nombre total Livres</p><h3 className="text-2xl font-bold dark:text-white">{summary.books ?? '-'}</h3></div>
-        <div className="bg-green-50 dark:bg-green-900 dark:text-white p-6 rounded-xl"><p className="dark:text-gray-300">nombre total Lecteurs</p><h3 className="text-2xl font-bold dark:text-white">{summary.readers ?? '-'}</h3></div>
-        <div className="bg-yellow-50 dark:bg-yellow-900 dark:text-white p-6 rounded-xl"><p className="dark:text-gray-300">Lecteurs actifs</p><h3 className="text-2xl font-bold dark:text-white">{summary.active_readers ?? '-'}</h3></div>
-        <div className="bg-teal-50 dark:bg-teal-900 dark:text-white p-6 rounded-xl"><p className="dark:text-gray-300">Livres utilisés</p><h3 className="text-2xl font-bold dark:text-white">{summary.active_books ?? '-'}</h3></div>
-        <div className="bg-purple-50 dark:bg-purple-900 dark:text-white p-6 rounded-xl"><p className="dark:text-gray-300">Emprunts</p><h3 className="text-2xl font-bold dark:text-white">{summary.loans ?? '-'}</h3></div>
-        <div className="bg-indigo-50 dark:bg-indigo-900 dark:text-white p-6 rounded-xl"><p className="dark:text-gray-300">Consultations</p><h3 className="text-2xl font-bold dark:text-white">{summary.consultations ?? '-'}</h3></div>
-        <div className="bg-orange-50 dark:bg-orange-900 dark:text-white p-6 rounded-xl"><p className="dark:text-gray-300">Heures Consult.</p><h3 className="text-2xl font-bold dark:text-white">{summary.consultation_hours ?? '-'}</h3></div>
-        <div className="bg-red-50 dark:bg-red-900 dark:text-white p-6 rounded-xl"><p className="dark:text-gray-300">Retards</p><h3 className="text-2xl font-bold dark:text-white">{summary.late ?? '-'}</h3></div>
-        <div className="bg-pink-50 dark:bg-pink-900 dark:text-white p-6 rounded-xl"><p className="dark:text-gray-300">Emprunts prolong&eacute;s</p><h3 className="text-2xl font-bold dark:text-white">{summary.prolonged_loans ?? '-'}</h3></div>
+        <div className="bg-blue-50 dark:bg-blue-900 dark:text-white p-6 rounded-xl"><p className="dark:text-gray-300">{t('Total livres')}</p><h3 className="text-2xl font-bold dark:text-white">{summary.books ?? '-'}</h3></div>
+        <div className="bg-green-50 dark:bg-green-900 dark:text-white p-6 rounded-xl"><p className="dark:text-gray-300">{t('Total lecteurs')}</p><h3 className="text-2xl font-bold dark:text-white">{summary.readers ?? '-'}</h3></div>
+        <div className="bg-yellow-50 dark:bg-yellow-900 dark:text-white p-6 rounded-xl"><p className="dark:text-gray-300">{t('Lecteurs actifs')}</p><h3 className="text-2xl font-bold dark:text-white">{summary.active_readers ?? '-'}</h3></div>
+        <div className="bg-teal-50 dark:bg-teal-900 dark:text-white p-6 rounded-xl"><p className="dark:text-gray-300">{t('Livres actifs')}</p><h3 className="text-2xl font-bold dark:text-white">{summary.active_books ?? '-'}</h3></div>
+        <div className="bg-purple-50 dark:bg-purple-900 dark:text-white p-6 rounded-xl"><p className="dark:text-gray-300">{t('Emprunts')}</p><h3 className="text-2xl font-bold dark:text-white">{summary.loans ?? '-'}</h3></div>
+        <div className="bg-indigo-50 dark:bg-indigo-900 dark:text-white p-6 rounded-xl"><p className="dark:text-gray-300">{t('Consultations')}</p><h3 className="text-2xl font-bold dark:text-white">{summary.consultations ?? '-'}</h3></div>
+        <div className="bg-orange-50 dark:bg-orange-900 dark:text-white p-6 rounded-xl"><p className="dark:text-gray-300">{t('Heures consultées')}</p><h3 className="text-2xl font-bold dark:text-white">{summary.consultation_hours ?? '-'}</h3></div>
+        <div className="bg-red-50 dark:bg-red-900 dark:text-white p-6 rounded-xl"><p className="dark:text-gray-300">{t('Retards')}</p><h3 className="text-2xl font-bold dark:text-white">{summary.late ?? '-'}</h3></div>
+        <div className="bg-pink-50 dark:bg-pink-900 dark:text-white p-6 rounded-xl"><p className="dark:text-gray-300">{t('Prolongations')}</p><h3 className="text-2xl font-bold dark:text-white">{summary.prolonged_loans ?? '-'}</h3></div>
       </div>
 
       {/* TOP LIVRES */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow dark:shadow-lg dark:text-white">
-        <h3 className="text-xl font-bold mb-4 dark:text-white">Top 10 Livres</h3>
+        <h3 className="text-xl font-bold mb-4 dark:text-white">{t('Top 10 Livres')}</h3>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={topBooks.slice(0,10)}>
             <CartesianGrid strokeDasharray="3 3"/>
@@ -346,7 +348,7 @@ export default function StatsDashboard() {
 
       {/* RÉPARTITION FACULTÉ */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow dark:shadow-lg dark:text-white">
-        <h3 className="text-xl font-bold mb-4 dark:text-white">Répartition par faculté</h3>
+        <h3 className="text-xl font-bold mb-4 dark:text-white">{t('Répartition par faculté')}</h3>
         <ResponsiveContainer width="100%" height={250}>
           <PieChart>
             <Pie data={byFaculty.map(f=>({name:f.faculte||'-', value:Number(f.cnt)||0}))}
@@ -360,7 +362,7 @@ export default function StatsDashboard() {
 
       {/* RÉPARTITION FILIÈRE */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow dark:shadow-lg dark:text-white">
-        <h3 className="text-xl font-bold mb-4 dark:text-white">Répartition par filière</h3>
+        <h3 className="text-xl font-bold mb-4 dark:text-white">{t('Répartition par filière')}</h3>
         <ResponsiveContainer width="100%" height={250}>
           <PieChart>
             <Pie data={byFiliere.map(f=>({name:f.filiere||'-', value:Number(f.cnt)||0}))}
@@ -374,7 +376,7 @@ export default function StatsDashboard() {
 
       {/* TENDANCE EMPRUNTS */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow dark:shadow-lg dark:text-white">
-        <h3 className="text-xl font-bold mb-4 dark:text-white">Tendance Emprunts</h3>
+        <h3 className="text-xl font-bold mb-4 dark:text-white">{t('Tendance Emprunts')}</h3>
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={trendLoans}>
             <CartesianGrid strokeDasharray="3 3"/>

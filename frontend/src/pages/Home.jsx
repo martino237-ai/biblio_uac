@@ -15,7 +15,7 @@ export default function Home() {
     setLoading(true);
     setTimeout(() => {
       navigate(path);
-    }, 2000);
+    }, 1000);
   }
 
   return (
@@ -166,23 +166,23 @@ export default function Home() {
               <div className="flex gap-4">
                 <span className="text-3xl">✓</span>
                 <div>
-                  <h5 className="text-xl font-bold text-white mb-2">Interface Intuitive</h5>
-                  <p>Facile à utiliser pour tous les niveaux d'utilisateurs</p>
+                  <h5 className="text-xl font-bold text-white mb-2">{t('Interface Intuitive')}</h5>
+                  <p>{t("Facile à utiliser pour tous les niveaux d'utilisateurs")}</p>
                 </div>
               </div>
 
               <div className="flex gap-4">
                 <span className="text-3xl">✓</span>
                 <div>
-                  <h5 className="text-xl font-bold text-white mb-2">Rapide et Fiable</h5>
-                  <p>Performance optimisée pour gérer de grandes bibliothèques</p>
+                  <h5 className="text-xl font-bold text-white mb-2">{t('Rapide et Fiable')}</h5>
+                  <p>{t('Performance optimisée pour gérer de grandes bibliothèques')}</p>
                 </div>
               </div>
 
               <div className="flex gap-4">
                 <span className="text-3xl">✓</span>
                 <div>
-                  <h5 className="text-xl font-bold text-white mb-2">Support Multilingue</h5>
+                  <h5 className="text-xl font-bold text-white mb-2">{t('Support Multilingue')}</h5>
                   <p>{t('Interface disponible en français et autres langues')}</p>
                 </div>
               </div>
@@ -190,8 +190,8 @@ export default function Home() {
               <div className="flex gap-4">
                 <span className="text-3xl">✓</span>
                 <div>
-                  <h5 className="text-xl font-bold text-white mb-2">Données Sécurisées</h5>
-                  <p>Vos données sont protégées avec des standards de sécurité élevés</p>
+                  <h5 className="text-xl font-bold text-white mb-2">{t('Données Sécurisées')}</h5>
+                  <p>{t('Vos données sont protégées avec des standards de sécurité élevés')}</p>
                 </div>
               </div>
             </div>
@@ -212,8 +212,8 @@ export default function Home() {
 
         {/* Footer */}
         <footer className="bg-blue-950 text-blue-200 py-8 px-8 text-center mt-12">
-          <p>&copy; 2026 Bibliothèque UAC. Tous droits réservés.</p>
-          <p className="text-sm mt-2">Gestion Intelligente des Bibliothèques</p>
+          <p>{t('© 2026 Bibliothèque UAC. Tous droits réservés.')}</p>
+          <p className="text-sm mt-2">{t('Gestion Intelligente des Bibliothèques')}</p>
         </footer>
       </section>
     </div>

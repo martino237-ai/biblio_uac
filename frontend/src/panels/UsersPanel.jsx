@@ -167,16 +167,16 @@ export default function UsersPanel({ onChange }) {
         {loading ? (
           <div className="text-center dark:text-gray-300">Chargement des utilisateurs...</div>
         ) : users.length === 0 ? (
-          <p className="text-center text-gray-500 dark:text-gray-400">Aucun utilisateur trouvé</p>
+          <p className="text-center text-gray-500 dark:text-gray-400">{t('Aucun utilisateur trouvé')}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead className="bg-gray-100 dark:bg-gray-700">
                 <tr>
                   <th className="p-3 border dark:border-gray-600 dark:text-white">Nom d'utilisateur</th>
-                  <th className="p-3 border dark:border-gray-600 dark:text-white">Nom</th>
-                  <th className="p-3 border dark:border-gray-600 dark:text-white">Rôle</th>
-                  <th className="p-3 border dark:border-gray-600 dark:text-white">Actions</th>
+                  <th className="p-3 border dark:border-gray-600 dark:text-white">{t('Nom')}</th>
+                  <th className="p-3 border dark:border-gray-600 dark:text-white">{t('Rôle')}</th>
+                  <th className="p-3 border dark:border-gray-600 dark:text-white">{t('Actions')}</th>
                 </tr>
               </thead>
 
@@ -360,8 +360,8 @@ export default function UsersPanel({ onChange }) {
                     onChange={(e) => setForm({ ...form, type: e.target.value })}
                   >
                     <option value="etudiant">Étudiant</option>
-                    <option value="enseignant">Enseignant</option>
-                    <option value="personnel">Personnel</option>
+                    <option value="enseignant">{t('Enseignant')}</option>
+                    <option value="personnel">{t('Personnel')}</option>
                   </select>
                 </div>
 
@@ -374,7 +374,7 @@ export default function UsersPanel({ onChange }) {
                     value={form.faculte}
                     onChange={(e) => setForm({ ...form, faculte: e.target.value })}
                   >
-                    <option value="">Sélectionner</option>
+                    <option value="">{t('Sélectionner')}</option>
                     {FACULTY_OPTIONS.map(f => (
                       <option key={f} value={f}>{f}</option>
                     ))}
@@ -391,7 +391,7 @@ export default function UsersPanel({ onChange }) {
                     onChange={(e) => setForm({ ...form, filiere: e.target.value })}
                     disabled={!form.faculte}
                   >
-                    <option value="">Sélectionner</option>
+                    <option value="">{t('Sélectionner')}</option>
                     {filiereOptions.map(f => (
                       <option key={f} value={f}>{f}</option>
                     ))}
@@ -407,13 +407,13 @@ export default function UsersPanel({ onChange }) {
                     value={form.niveau}
                     onChange={(e) => setForm({ ...form, niveau: e.target.value })}
                   >
-                    <option value="">Sélectionner</option>
+                    <option value="">{t('Sélectionner')}</option>
                     <option value="L1">Licence 1</option>
                     <option value="L2">Licence 2</option>
                     <option value="L3">Licence 3</option>
                     <option value="M1">Master 1</option>
                     <option value="M2">Master 2</option>
-                    <option value="D">Doctorat</option>
+                    <option value="D">{t('Doctorat')}</option>
                   </select>
                 </div>
               </>

@@ -40,7 +40,7 @@ export default function Librarian() {
     setTimeout(() => {
       setActive(newActive);
       setLoading(false);
-    }, 2000); // 2 secondes de chargement
+    }, 1000); // 1 seconde de chargement
   }
 
   const [stats, setStats] = useState({

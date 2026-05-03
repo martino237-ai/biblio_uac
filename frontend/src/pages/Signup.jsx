@@ -130,10 +130,10 @@ export default function Signup() {
       // Afficher le chargement avant redirection
       setRedirectLoading(true);
       
-      // Attendre 2 secondes puis rediriger vers la page des livres
+      // Attendre 1 seconde puis rediriger vers la page des livres
       setTimeout(() => {
         window.location = '/books';
-      }, 2000);
+      }, 1000);
     } catch (err) {
       console.error(err);
       setError(err?.response?.data?.message || err.message || t('Erreur lors de l\'inscription'));
@@ -184,9 +184,9 @@ export default function Signup() {
                   disabled={loading}
                 >
                   <option value="etudiant">Étudiant</option>
-                  <option value="enseignant">Enseignant</option>
-                  <option value="personnel">Personnel</option>
-                  <option value="autre">Autre</option>
+                  <option value="enseignant">{t('Enseignant')}</option>
+                  <option value="personnel">{t('Personnel')}</option>
+                  <option value="autre">{t('Autre')}</option>
                 </select>
               </div>
 

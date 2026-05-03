@@ -20,12 +20,39 @@ async function ensureLoanTypeColumn() {
   }
 }
 
+async function ensureActivityTimestamps() {
+  const [rows] = await sequelize.query(
+    `SELECT column_name FROM information_schema.columns
+     WHERE table_schema = DATABASE()
+       AND table_name = 'activities'
+       AND column_name IN ('created_at', 'updated_at')`
+  );
+  const existingColumns = rows.map(r => r.column_name);
+
+  if (!existingColumns.includes('created_at')) {
+    console.log('✅ Colonne created_at manquante sur activities, ajout...');
+    await sequelize.query(
+      "ALTER TABLE activities ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP"
+    );
+    console.log('✅ Colonne created_at ajoutée');
+  }
+
+  if (!existingColumns.includes('updated_at')) {
+    console.log('✅ Colonne updated_at manquante sur activities, ajout...');
+    await sequelize.query(
+      "ALTER TABLE activities ADD COLUMN updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+    );
+    console.log('✅ Colonne updated_at ajoutée');
+  }
+}
+
 (async () => {
   try {
     await sequelize.authenticate();
     console.log('✅ DB connecté');
 
     await ensureLoanTypeColumn();
+    await ensureActivityTimestamps();
     await sequelize.sync({ alter: true }); // keep schema in sync with models
     console.log('✅ Schéma synchronisé');
 

@@ -1,8 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 // assets
 import logo from '../assets/images/logo.jpeg';
 
 export default function Sidebar({ active = 'dashboard', onChange = () => {}, tabs = [], open = false, setOpen = () => {} }) {
+  const { t } = useTranslation();
 
   return (
     <>
@@ -23,8 +25,8 @@ export default function Sidebar({ active = 'dashboard', onChange = () => {}, tab
               <img src={logo} alt="Logo" className="h-full w-full object-contain" />
             </div>
             <div>
-              <div className="brand-title">Bibliothèque</div>
-              <div className="muted">Cosendai</div>
+              <div className="brand-title">{t('Bibliothèque')}</div>
+              <div className="muted">{t('Cosendai')}</div>
             </div>
           </div>
 
@@ -44,7 +46,7 @@ export default function Sidebar({ active = 'dashboard', onChange = () => {}, tab
                 </button>
               ))
             ) : (
-              <p className="muted">Aucun onglet</p>
+              <p className="muted">{t('Aucun onglet')}</p>
             )}
           </nav>
 

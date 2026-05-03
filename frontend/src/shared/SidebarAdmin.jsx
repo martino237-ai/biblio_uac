@@ -1,9 +1,11 @@
 import React from "react";
+import { useTranslation } from 'react-i18next';
 import "../styles/admin.css";
 // assets
 import logo from '../assets/images/logo.jpeg';
 
 export default function SidebarAdmin({ active, onChange, tabs, open = false, setOpen = () => {} }) {
+  const { t } = useTranslation();
 
   return (
     <>
@@ -19,8 +21,8 @@ export default function SidebarAdmin({ active, onChange, tabs, open = false, set
         <div className="sidebar-header">
           <img src={logo} alt="Logo" className="brand-logo h-10 w-10 object-contain" />
           <div className="brand-text">
-            <h2>Admin</h2>
-            <p>Bibliothèque UAC</p>
+            <h2>{t('Admin')}</h2>
+            <p>{t('Bibliothèque UAC')}</p>
           </div>
         </div>
 

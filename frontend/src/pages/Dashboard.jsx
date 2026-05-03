@@ -30,7 +30,7 @@ export default function Dashboard() {
     }
   }
 
-  if (loading) return <div className="card">Chargement...</div>;
+  if (loading) return <div className="card">{t('Chargement...')}</div>;
 
   return (
     <div className="container">
