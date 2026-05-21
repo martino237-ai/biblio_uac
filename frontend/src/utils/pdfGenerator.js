@@ -85,13 +85,26 @@ export function addPDFHeader(doc, options = {}) {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
   doc.setTextColor(33); // Noir
-  doc.text(cleanTextForPDF(org), centerX, yPos + 4, { align: 'center' });
+  if (title) {
+    doc.text(cleanTextForPDF(title), centerX, yPos + 8, { align: 'center' });
+    yPos += 8;
+  }
+
+  if (subtitle) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(12);
+    doc.setTextColor(100); // Gris
+    doc.text(cleanTextForPDF(subtitle), centerX, yPos + 12, { align: 'center' });
+    yPos += 6;
+  }
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(12);
+  doc.setFontSize(10);
   doc.setTextColor(100); // Gris
+  doc.text(cleanTextForPDF(org), centerX, yPos + 10, { align: 'center' });
+
   if (address) {
-    doc.text(cleanTextForPDF(address), centerX, yPos + 10, { align: 'center' });
+    doc.text(cleanTextForPDF(address), centerX, yPos + 16, { align: 'center' });
   }
 
   // Ligne de séparation
@@ -112,7 +125,7 @@ export function addPDFFooter(doc, options = {}) {
   const {
     color = PDF_CONFIG.primaryColor,
     showDate = true,
-    dateFormat = null
+    dateFormat = 'fr-FR'
   } = options;
 
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -130,7 +143,7 @@ export function addPDFFooter(doc, options = {}) {
   doc.line(margin, pageHeight - 12, pageWidth - margin, pageHeight - 12);
 
   if (showDate) {
-    const date = new Date().toLocaleDateString('fr-FR', {
+    const date = new Date().toLocaleDateString(dateFormat, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -273,9 +286,7 @@ export function generateStatsPDF(sections, options = {}) {
   try {
     console.log('🟢 DEBUG: Creating PDF document');
     const doc = new jsPDF({ orientation: 'landscape', format: 'a4' });
-    const pageWidth = doc.internal.pageSize.getWidth();
     const margin = PDF_CONFIG.margins.left;
-    const maxPageHeight = doc.internal.pageSize.getHeight() - PDF_CONFIG.margins.bottom;
 
     // En-tête (première page)
     console.log('🟢 DEBUG: Adding header');
@@ -410,7 +421,7 @@ export async function loadLogoBase64(imagePath) {
   }
 }
 
-export default {
+const pdfGenerator = {
   PDF_CONFIG,
   addPDFHeader,
   addPDFFooter,
@@ -419,3 +430,5 @@ export default {
   loadLogoBase64,
   cleanTextForPDF
 };
+
+export default pdfGenerator;

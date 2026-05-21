@@ -17,6 +17,51 @@
   padding: 14px;
   border-radius: 14px;
   transition: background 0.3s ease;
+  flex-wrap: wrap;
+}
+
+.book-top-left {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 240px;
+}
+
+.book-cover {
+  width: 120px;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  background: #e2e8f0;
+}
+
+.book-rating {
+  margin: 8px 0 0;
+  font-size: 14px;
+  opacity: 0.95;
+}
+
+.book-rating a {
+  color: #dbeafe;
+  text-decoration: underline;
+}
+
+.free-badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #fde68a;
+  color: #92400e;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.amazon-review-section .book-desc-box {
+  background: #fff7ed;
+  border-color: #fcd34d;
 }
 
 .book-title {
@@ -28,6 +73,212 @@
   margin: 5px 0 0;
   font-size: 13px;
   opacity: 0.9;
+}
+
+.book-header-block {
+  display: grid;
+  grid-template-columns: 220px 1.5fr 240px;
+  gap: 18px;
+  align-items: start;
+}
+
+.book-cover-large {
+  width: 220px;
+  height: 330px;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  background: #f8fafc;
+}
+
+.book-headline-block {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.book-badge-block {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.book-badge {
+  background: rgba(255,255,255,0.15);
+  color: #f8fafc;
+  border: 1px solid rgba(255,255,255,0.35);
+  padding: 6px 12px;
+  border-radius: 100px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.book-byline {
+  margin: 0;
+  color: #f3f4f6;
+  opacity: 0.92;
+}
+
+.book-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.book-rating-count {
+  opacity: 0.88;
+}
+
+.book-cta-row {
+  margin-top: 10px;
+}
+
+.amazon-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 18px;
+  border-radius: 8px;
+  background: #ffd814;
+  color: #111;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.amazon-cta.secondary {
+  background: #fff;
+  color: #111;
+  border: 1px solid #d1d5db;
+}
+
+.book-quick-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  gap: 10px 20px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 14px;
+  border-radius: 14px;
+}
+
+.summary-label {
+  display: block;
+  font-size: 12px;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 4px;
+}
+
+.book-action-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+}
+
+.book-action-value {
+  text-align: center;
+}
+
+.book-action-value span {
+  display: block;
+  font-size: 34px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.book-action-value small {
+  color: #6b7280;
+}
+
+.book-action-note {
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.book-product-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+.book-description-panel,
+.book-spec-panel,
+.book-review-panel {
+  background: white;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 10px 24px rgba(15,23,42,0.08);
+}
+
+.book-description-panel h2,
+.book-spec-panel h2,
+.book-review-panel h2 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 18px;
+  color: #111827;
+}
+
+.book-desc-box {
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 14px;
+  min-height: 90px;
+  border: 1px solid #e5e7eb;
+}
+
+.book-meta-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.meta-tag {
+  display: inline-flex;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 12px;
+}
+
+.book-spec-panel dl {
+  margin: 0;
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row dt {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.detail-row dd {
+  margin: 0;
+  color: #111827;
+}
+
+.book-footer {
+  text-align: right;
+  margin-top: 10px;
 }
 
 /* ===== BADGE DE DISPONIBILITÉ ===== */

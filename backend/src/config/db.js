@@ -9,7 +9,8 @@ const sequelize = new Sequelize(
   {
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
-    dialect: process.env.DB_DIALECT || 'mysql',
+    dialect: process.env.DB_DIALECT || 'sqlite',
+    storage: process.env.DB_STORAGE || './database.sqlite',
     logging: false,
     define: {
       underscored: true, // created_at instead of createdAt

@@ -5,6 +5,7 @@ import api from '../api/axios';
 
 // background asset
 import fond1 from '../assets/images/fond1.jpeg';
+import logo from '../assets/images/logo.jpeg';
 
 
 
@@ -79,6 +80,14 @@ export default function Login(){
       {/* dark overlay to dim the image */}
       <div className="absolute inset-0 bg-blue-950 opacity-60"></div>
       <div className="w-full max-w-md relative  ">
+        <nav className="fixed top-0 left-0 w-full z-20 flex flex-col sm:flex-row justify-between items-center px-8 py-6 bg-blue-950">
+                  <div className="flex items-center gap-3">
+                    <img src={logo} alt="Logo" className="h-10 w-10 object-contain" />
+                    <h1 className="text-2xl font-bold text-white">{t('Bibliothèque UAC')}</h1>
+                  </div>
+                  <div className="flex gap-4 mt-4 sm:mt-0">
+                  </div>
+                </nav>
 
         <div className="text-center mb-8">
           <div className="text-6xl mb-4">📚</div>

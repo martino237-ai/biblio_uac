@@ -61,12 +61,15 @@ const summary = async (req, res) => {
     const whereSql = start && end ?
       ` AND heure_debut BETWEEN :start AND :end` : '';
 
-    const totalConsultSeconds = await sequelize.query(
-      `SELECT COALESCE(SUM(TIMESTAMPDIFF(SECOND, heure_debut, heure_fin)),0) AS secs 
-       FROM consultations WHERE heure_fin IS NOT NULL ${whereSql}`,
-      { type: Sequelize.QueryTypes.SELECT,
-        replacements: start && end ? { start, end } : {} }
-    );
+    const dialect = sequelize.getDialect();
+    const durationQuery = dialect === 'sqlite'
+      ? `SELECT COALESCE(SUM(strftime('%s', heure_fin) - strftime('%s', heure_debut)),0) AS secs FROM consultations WHERE heure_fin IS NOT NULL ${whereSql}`
+      : `SELECT COALESCE(SUM(TIMESTAMPDIFF(SECOND, heure_debut, heure_fin)),0) AS secs FROM consultations WHERE heure_fin IS NOT NULL ${whereSql}`;
+
+    const totalConsultSeconds = await sequelize.query(durationQuery, {
+      type: Sequelize.QueryTypes.SELECT,
+      replacements: start && end ? { start, end } : {}
+    });
 
     const secs = safe(totalConsultSeconds[0].secs);
     const hours = +(secs / 3600).toFixed(2);
@@ -337,7 +340,7 @@ const trends = async (req, res) => {
     const type =
       req.query.type === "consultations" ? "consultations" : "loans";
     const period =
-      req.query.period === "monthly" ? "monthly" : "daily";
+      req.query.period === "monthly" || req.query.period === "mois" ? "monthly" : "daily";
     const limit = Math.min(
       365,
       parseInt(req.query.limit || "30", 10)
@@ -345,20 +348,6 @@ const trends = async (req, res) => {
 
     const start = req.query.start;
     const end = req.query.end;
-
-    let dateFormat, groupExpr;
-
-    if (period === "daily") {
-      dateFormat = "%Y-%m-%d";
-      groupExpr = `DATE(${
-        type === "loans" ? "date_emprunt" : "heure_debut"
-      })`;
-    } else {
-      dateFormat = "%Y-%m";
-      groupExpr = `DATE_FORMAT(${
-        type === "loans" ? "date_emprunt" : "heure_debut"
-      },'%Y-%m-01')`;
-    }
 
     // build optional where clause if a date range is provided
     let whereClause = '';
@@ -370,15 +359,41 @@ const trends = async (req, res) => {
       replacements.end = end;
     }
 
-    const sql = `
-      SELECT DATE_FORMAT(${groupExpr}, '${dateFormat}') as period,
-             COUNT(*) AS cnt
-      FROM ${type}
-      ${whereClause}
-      GROUP BY period
-      ORDER BY period DESC
-      LIMIT :limit
-    `;
+    const dialect = sequelize.getDialect();
+    let sql;
+
+    if (dialect === 'sqlite') {
+      // SQLite version using strftime
+      const dateExpr = period === "daily"
+        ? `strftime('%Y-%m-%d', ${type === "loans" ? "date_emprunt" : "heure_debut"})`
+        : `strftime('%Y-%m', ${type === "loans" ? "date_emprunt" : "heure_debut"})`;
+      
+      sql = `
+        SELECT ${dateExpr} as period,
+               COUNT(*) AS cnt
+        FROM ${type}
+        ${whereClause}
+        GROUP BY period
+        ORDER BY period DESC
+        LIMIT :limit
+      `;
+    } else {
+      // MySQL version using DATE_FORMAT
+      const dateFormat = period === "daily" ? "%Y-%m-%d" : "%Y-%m";
+      const groupExpr = period === "daily"
+        ? `DATE(${type === "loans" ? "date_emprunt" : "heure_debut"})`
+        : `DATE_FORMAT(${type === "loans" ? "date_emprunt" : "heure_debut"},'%Y-%m-01')`;
+      
+      sql = `
+        SELECT DATE_FORMAT(${groupExpr}, '${dateFormat}') as period,
+               COUNT(*) AS cnt
+        FROM ${type}
+        ${whereClause}
+        GROUP BY period
+        ORDER BY period DESC
+        LIMIT :limit
+      `;
+    }
 
     const rows = await sequelize.query(sql, {
       replacements,
@@ -537,7 +552,17 @@ const hourlyConsults = async (req, res) => {
       repl.start = start;
       repl.end = end;
     }
-    const rows = await sequelize.query(`
+    const dialect = sequelize.getDialect();
+    const hourlyQuery = dialect === 'sqlite' ? `
+      SELECT 
+        CAST(strftime('%H', heure_debut) AS INTEGER) as hour,
+        COUNT(*) as count,
+        ROUND(AVG(strftime('%s', heure_fin) - strftime('%s', heure_debut)), 1) as avg_duration
+      FROM consultations
+      ${where}
+      GROUP BY CAST(strftime('%H', heure_debut) AS INTEGER)
+      ORDER BY hour ASC;
+    ` : `
       SELECT 
         HOUR(heure_debut) as hour,
         COUNT(*) as count,
@@ -546,7 +571,8 @@ const hourlyConsults = async (req, res) => {
       ${where}
       GROUP BY HOUR(heure_debut)
       ORDER BY hour ASC;
-    `, { replacements: repl, type: Sequelize.QueryTypes.SELECT });
+    `;
+    const rows = await sequelize.query(hourlyQuery, { replacements: repl, type: Sequelize.QueryTypes.SELECT });
 
     res.json(rows);
   } catch (err) {
@@ -565,7 +591,16 @@ const monthlyConsults = async (req, res) => {
       repl.start = start;
       repl.end = end;
     }
-    const rows = await sequelize.query(`
+    const dialect = sequelize.getDialect();
+    const monthlyQuery = dialect === 'sqlite' ? `
+      SELECT 
+        strftime('%Y-%m', heure_debut) as month,
+        ROUND(SUM((strftime('%s', heure_fin) - strftime('%s', heure_debut)) / 3600.0), 2) as hours
+      FROM consultations
+      ${where}
+      GROUP BY month
+      ORDER BY month ASC;
+    ` : `
       SELECT 
         DATE_FORMAT(heure_debut, '%Y-%m') as month,
         ROUND(SUM(TIMESTAMPDIFF(HOUR, heure_debut, heure_fin)), 2) as hours
@@ -573,7 +608,8 @@ const monthlyConsults = async (req, res) => {
       ${where}
       GROUP BY month
       ORDER BY month ASC;
-    `, { replacements: repl, type: Sequelize.QueryTypes.SELECT });
+    `;
+    const rows = await sequelize.query(monthlyQuery, { replacements: repl, type: Sequelize.QueryTypes.SELECT });
 
     res.json(rows);
   } catch (err) {

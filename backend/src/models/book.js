@@ -26,6 +26,11 @@ const Book = sequelize.define('Book', {
   total_exemplaires: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, defaultValue: 1 },
   exemplaires_disponibles: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, defaultValue: 1 },
   description: { type: DataTypes.TEXT, allowNull: true },
+  image_url: { type: DataTypes.STRING(500), allowNull: true },
+  amazon_url: { type: DataTypes.STRING(500), allowNull: true },
+  amazon_rating: { type: DataTypes.DECIMAL(2,1), allowNull: true },
+  amazon_reviews: { type: DataTypes.TEXT, allowNull: true },
+  gratuit: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
   emplacement: { type: DataTypes.STRING(255), allowNull: true }
   
 }, {

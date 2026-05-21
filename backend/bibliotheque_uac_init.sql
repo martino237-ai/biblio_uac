@@ -27,6 +27,11 @@ CREATE TABLE IF NOT EXISTS books (
   total_exemplaires INT DEFAULT 1,
   exemplaires_disponibles INT DEFAULT 1,
   description TEXT,
+  image_url VARCHAR(500),
+  amazon_url VARCHAR(500),
+  amazon_rating DECIMAL(2,1),
+  amazon_reviews TEXT,
+  gratuit BOOLEAN DEFAULT FALSE,
   emplacement VARCHAR(255),
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
