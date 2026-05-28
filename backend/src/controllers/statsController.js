@@ -117,7 +117,7 @@ const topBooks = async (req, res) => {
         "livre_id",
         [Sequelize.fn("COUNT", Sequelize.col("livre_id")), "cnt"],
       ],
-      where: loanWhere,
+      where: { ...loanWhere, livre_id: { [Op.ne]: null } },
       group: ["livre_id"],
       order: [[Sequelize.literal("cnt"), "DESC"]],
       limit: 10,
@@ -129,7 +129,7 @@ const topBooks = async (req, res) => {
         "livre_id",
         [Sequelize.fn("COUNT", Sequelize.col("livre_id")), "cnt"],
       ],
-      where: consultWhere,
+      where: { ...consultWhere, livre_id: { [Op.ne]: null } },
       group: ["livre_id"],
       order: [[Sequelize.literal("cnt"), "DESC"]],
       limit: 10,
@@ -138,30 +138,39 @@ const topBooks = async (req, res) => {
 
     const map = new Map();
 
-    topLoans.forEach((t) =>
+    topLoans.forEach((t) => {
+      if (t.livre_id == null) return;
       map.set(
         String(t.livre_id),
         (map.get(String(t.livre_id)) || 0) + Number(t.cnt || 0)
-      )
-    );
+      );
+    });
 
-    topConsults.forEach((t) =>
+    topConsults.forEach((t) => {
+      if (t.livre_id == null) return;
       map.set(
         String(t.livre_id),
         (map.get(String(t.livre_id)) || 0) + Number(t.cnt || 0)
-      )
-    );
+      );
+    });
 
     const combined = Array.from(map.entries())
       .map(([livre_id, total]) => ({
         livre_id: Number(livre_id),
         total,
       }))
+      .filter((item) => Number.isInteger(item.livre_id) && item.livre_id > 0)
       .sort((a, b) => b.total - a.total)
       .slice(0, 10);
 
-    const bookIds = combined.map((x) => x.livre_id);
-    const books = await Book.findAll({ where: { id: bookIds } });
+    const bookIds = combined
+      .map((x) => x.livre_id)
+      .filter((id) => Number.isInteger(id) && id > 0);
+
+    let books = [];
+    if (bookIds.length > 0) {
+      books = await Book.findAll({ where: { id: { [Op.in]: bookIds } } });
+    }
 
     const bookById = {};
     books.forEach((b) => (bookById[b.id] = b));
@@ -241,7 +250,10 @@ const topReaders = async (req, res) => {
       .slice(0, 10);
 
     const ids = combined.map((c) => c.lecteur_id);
-    const readers = await Reader.findAll({ where: { id: ids } });
+    let readers = [];
+    if (ids.length > 0) {
+      readers = await Reader.findAll({ where: { id: ids } });
+    }
 
     const readerById = {};
     readers.forEach((r) => (readerById[r.id] = r));

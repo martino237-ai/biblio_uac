@@ -346,7 +346,7 @@ export default function SettingsPanel() {
       </div>
 
       {/* Styles pour l'animation */}
-      <style jsx>{`
+      <style>{`
         @keyframes slideIn {
           from {
             transform: translateX(100%);

@@ -64,41 +64,61 @@ export default function StatsDashboard() {
   async function loadAll() {
     setLoading(true);
     try {
-      const [
-        sumRes,
-        topBooksRes,
-        topReadersRes,
-        facRes,
-        filFacRes,
-        tLoanRes,
-        tConsultRes,
-        hourlyRes,
-        monthlyRes
-      ] = await Promise.all([
-        api.get('/stats/summary', { params: { period: filterPeriod, start: dateRange.start, end: dateRange.end } }),
-        api.get('/stats/top-books', { params: { period: filterPeriod, start: dateRange.start, end: dateRange.end } }),
-        api.get('/stats/top-readers', { params: { period: filterPeriod, start: dateRange.start, end: dateRange.end } }),
-        api.get('/stats/faculties', { params: { start: dateRange.start, end: dateRange.end } }),
-        api.get('/stats/filieres-facultes', { params: { start: dateRange.start, end: dateRange.end } }),
-        api.get('/stats/trends', { params: { type: 'loans', period: filterPeriod, start: dateRange.start, end: dateRange.end } }),
-        api.get('/stats/trends', { params: { type: 'consultations', period: filterPeriod, start: dateRange.start, end: dateRange.end } }),
-        api.get('/stats/hourly-consults', { params: { period: filterPeriod, start: dateRange.start, end: dateRange.end } }),
-        api.get('/stats/monthly-consults', { params: { period: filterPeriod, start: dateRange.start, end: dateRange.end } })
-      ]);
+      const requests = [
+        { key: 'summary', promise: api.get('/stats/summary', { params: { period: filterPeriod, start: dateRange.start, end: dateRange.end } }) },
+        { key: 'topBooks', promise: api.get('/stats/top-books', { params: { period: filterPeriod, start: dateRange.start, end: dateRange.end } }) },
+        { key: 'topReaders', promise: api.get('/stats/top-readers', { params: { period: filterPeriod, start: dateRange.start, end: dateRange.end } }) },
+        { key: 'faculties', promise: api.get('/stats/faculties', { params: { start: dateRange.start, end: dateRange.end } }) },
+        { key: 'filieresFacultes', promise: api.get('/stats/filieres-facultes', { params: { start: dateRange.start, end: dateRange.end } }) },
+        { key: 'loanTrends', promise: api.get('/stats/trends', { params: { type: 'loans', period: filterPeriod, start: dateRange.start, end: dateRange.end } }) },
+        { key: 'consultTrends', promise: api.get('/stats/trends', { params: { type: 'consultations', period: filterPeriod, start: dateRange.start, end: dateRange.end } }) },
+        { key: 'hourlyConsults', promise: api.get('/stats/hourly-consults', { params: { start: dateRange.start, end: dateRange.end } }) },
+        { key: 'monthlyConsults', promise: api.get('/stats/monthly-consults', { params: { start: dateRange.start, end: dateRange.end } }) }
+      ];
 
-      console.log('✅ stats response', sumRes.data);
-      setErrorMsg('');
-      setSummary(sumRes.data || {});
-    setTopBooks(topBooksRes.data?.topCombined || []);
-    setTopReaders(topReadersRes.data?.topReaders || []);
-      setByFaculty(facRes.data?.byFaculty || []);
-      setByFiliere(facRes.data?.byFiliere || []);
-      // filieres-facultes endpoint returns consultations and loans counts by filiere
-      if (filFacRes.data && filFacRes.data.data) {
-        setConsultsByFiliere(filFacRes.data.data.consultationsParFiliere || []);
-        setLoansByFiliere(filFacRes.data.data.empruntsParFiliere || []);
-        setConsultsByFaculte(filFacRes.data.data.consultationsParFaculte || []);
-        setLoansByFaculte(filFacRes.data.data.empruntsParFaculte || []);
+      const results = await Promise.allSettled(requests.map(r => r.promise));
+      const resolved = {};
+      let firstError = null;
+
+      results.forEach((result, index) => {
+        const key = requests[index].key;
+        if (result.status === 'fulfilled') {
+          resolved[key] = result.value;
+        } else {
+          console.error(`❌ stats request failed for ${key}:`, result.reason);
+          if (!firstError) firstError = result.reason;
+        }
+      });
+
+      if (resolved.summary) {
+        console.log('✅ stats response', resolved.summary.data);
+        setSummary(resolved.summary.data || {});
+      }
+      if (resolved.topBooks) {
+        setTopBooks(resolved.topBooks.data?.topCombined || []);
+      }
+      if (resolved.topReaders) {
+        setTopReaders(resolved.topReaders.data?.topReaders || []);
+      }
+      if (resolved.faculties) {
+        setByFaculty(resolved.faculties.data?.byFaculty || []);
+      }
+      if (resolved.filieresFacultes) {
+        setByFiliere(resolved.filieresFacultes.data?.byFiliere || []);
+        if (resolved.filieresFacultes.data && resolved.filieresFacultes.data.data) {
+          setConsultsByFiliere(resolved.filieresFacultes.data.data.consultationsParFiliere || []);
+          setLoansByFiliere(resolved.filieresFacultes.data.data.empruntsParFiliere || []);
+          setConsultsByFaculte(resolved.filieresFacultes.data.data.consultationsParFaculte || []);
+          setLoansByFaculte(resolved.filieresFacultes.data.data.empruntsParFaculte || []);
+        }
+      }
+
+      if (firstError) {
+        const msg = firstError?.response?.data?.error || firstError?.response?.data?.message || firstError.message;
+        setErrorMsg(msg || 'Erreur de chargement');
+        alert('Erreur chargement statistiques, consultez la console');
+      } else {
+        setErrorMsg('');
       }
     } catch (err) {
       console.error("❌ ERREUR CHARGEMENT STATS :", err);

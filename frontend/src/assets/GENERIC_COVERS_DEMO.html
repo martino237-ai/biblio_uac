@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📚 Aperçu des Couvertures Génériques - Bibliothèque UAC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e0e7ff 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #0f172a;
+            margin-bottom: 12px;
+            font-size: 2.5rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #475569;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .section {
+            margin-bottom: 50px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #0f172a;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #2563eb;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        /* Couvertures locales */
+        .cover-local {
+            height: 250px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .cover-local:hover {
+            transform: translateY(-8px);
+        }
+
+        .c1 { background: linear-gradient(135deg, #0f4c75 0%, #3282b8 50%, #0f4c75 100%); }
+        .c2 { background: linear-gradient(135deg, #0d5c3f 0%, #16a34a 50%, #0d5c3f 100%); }
+        .c3 { background: linear-gradient(135deg, #8b4513 0%, #d97706 50%, #8b4513 100%); }
+        .c4 { background: linear-gradient(135deg, #7d0d57 0%, #db2777 50%, #7d0d57 100%); }
+        .c5 { background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #4c1d95 100%); }
+        .c6 { background: linear-gradient(135deg, #7c2d12 0%, #ea580c 50%, #7c2d12 100%); }
+
+        .spine {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 10px;
+        }
+
+        .c1 .spine { background: linear-gradient(180deg, #1e40af, #0c3c7a); box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+        .c2 .spine { background: linear-gradient(180deg, #15803d, #0a3e2a); box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+        .c3 .spine { background: linear-gradient(180deg, #c84400, #6b3410); box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+        .c4 .spine { background: linear-gradient(180deg, #be185d, #6b0f47); box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+        .c5 .spine { background: linear-gradient(180deg, #6d28d9, #371d5e); box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+        .c6 .spine { background: linear-gradient(180deg, #d97706, #8b2b0d); box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+
+        .cover-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            z-index: 1;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .cover-icon {
+            font-size: 4rem;
+            opacity: 0.8;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .cover-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            line-height: 1.4;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* Badges */
+        .badges {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 2;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            margin-left: 8px;
+        }
+
+        .badge-available {
+            background: rgba(34, 197, 94, 0.95);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .badge-unavailable {
+            background: rgba(239, 68, 68, 0.95);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .badge-free {
+            background: rgba(99, 102, 241, 0.95);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        /* Code tag */
+        .code-tag {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 2;
+            background: rgba(15,23,42,.85);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            padding: 4px 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Info box */
+        .info-box {
+            background: #ffffff;
+            border: 2px solid #2563eb;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .info-box h3 {
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .responsive-demo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .responsive-cover {
+            height: 180px;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .label {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #475569;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        footer {
+            text-align: center;
+            color: #94a3b8;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 15px;
+            }
+
+            .cover-local {
+                height: 200px;
+            }
+
+            .cover-icon {
+                font-size: 3rem;
+            }
+
+            .cover-title {
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.4rem;
+            }
+
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .cover-local {
+                height: 150px;
+            }
+
+            .cover-icon {
+                font-size: 2rem;
+            }
+
+            .cover-title {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Couvertures Génériques Bibliothèque UAC</h1>
+        <p class="subtitle">Démonstration des images par défaut pour les livres</p>
+
+        <!-- Section Couvertures Locales -->
+        <div class="section">
+            <h2 class="section-title">📕 Couvertures Locales (Livres de la Bibliothèque)</h2>
+            
+            <div class="info-box">
+                <h3>✨ Caractéristiques</h3>
+                <p>Les couvertures locales affichent des dégradés de couleurs professionnels avec:</p>
+                <ul style="margin: 10px 0 0 20px; color: #475569;">
+                    <li>✓ Épine du livre (spine) visible</li>
+                    <li>✓ Icône emoji du livre</li>
+                    <li>✓ Titre en blanc avec ombre</li>
+                    <li>✓ Badge de disponibilité</li>
+                    <li>✓ Code du livre</li>
+                </ul>
+            </div>
+
+            <div class="grid">
+                <!-- Couleur 1 - Bleu -->
+                <div>
+                    <div class="cover-local c1">
+                        <div class="spine"></div>
+                        <div class="cover-content">
+                            <div class="cover-icon">📖</div>
+                            <div class="cover-title">Introduction à l'Informatique</div>
+                        </div>
+                        <div class="badges">
+                            <span class="badge badge-available">● 3/5</span>
+                        </div>
+                        <div class="code-tag">INF-001</div>
+                    </div>
+                    <div class="label">Bleu - Informatique</div>
+                </div>
+
+                <!-- Couleur 2 - Vert -->
+                <div>
+                    <div class="cover-local c2">
+                        <div class="spine"></div>
+                        <div class="cover-content">
+                            <div class="cover-icon">📖</div>
+                            <div class="cover-title">Biologie Générale</div>
+                        </div>
+                        <div class="badges">
+                            <span class="badge badge-available">● 2/3</span>
+                        </div>
+                        <div class="code-tag">BIO-042</div>
+                    </div>
+                    <div class="label">Vert - Sciences</div>
+                </div>
+
+                <!-- Couleur 3 - Orange -->
+                <div>
+                    <div class="cover-local c3">
+                        <div class="spine"></div>
+                        <div class="cover-content">
+                            <div class="cover-icon">📖</div>
+                            <div class="cover-title">Histoire Moderne</div>
+                        </div>
+                        <div class="badges">
+                            <span class="badge badge-available">● 1/1</span>
+                        </div>
+                        <div class="code-tag">HIS-156</div>
+                    </div>
+                    <div class="label">Orange - Histoire</div>
+                </div>
+
+                <!-- Couleur 4 - Rose -->
+                <div>
+                    <div class="cover-local c4">
+                        <div class="spine"></div>
+                        <div class="cover-content">
+                            <div class="cover-icon">📖</div>
+                            <div class="cover-title">Littérature Française</div>
+                        </div>
+                        <div class="badges">
+                            <span class="badge badge-unavailable">Indisponible</span>
+                        </div>
+                        <div class="code-tag">LIT-203</div>
+                    </div>
+                    <div class="label">Rose - Littérature</div>
+                </div>
+
+                <!-- Couleur 5 - Violet -->
+                <div>
+                    <div class="cover-local c5">
+                        <div class="spine"></div>
+                        <div class="cover-content">
+                            <div class="cover-icon">📖</div>
+                            <div class="cover-title">Philosophie</div>
+                        </div>
+                        <div class="badges">
+                            <span class="badge badge-available">● 2/2</span>
+                        </div>
+                        <div class="code-tag">PHI-089</div>
+                    </div>
+                    <div class="label">Violet - Philosophie</div>
+                </div>
+
+                <!-- Couleur 6 - Rouge -->
+                <div>
+                    <div class="cover-local c6">
+                        <div class="spine"></div>
+                        <div class="cover-content">
+                            <div class="cover-icon">📖</div>
+                            <div class="cover-title">Droit Constitutionnel</div>
+                        </div>
+                        <div class="badges">
+                            <span class="badge badge-available">● 4/6</span>
+                        </div>
+                        <div class="code-tag">DRO-312</div>
+                    </div>
+                    <div class="label">Rouge - Droit</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Design Responsive -->
+        <div class="section">
+            <h2 class="section-title">📱 Design Responsive</h2>
+            
+            <div class="info-box">
+                <h3>🎨 Adaptabilité aux écrans</h3>
+                <p>Les couvertures s'adaptent parfaitement à tous les appareils:</p>
+                <ul style="margin: 10px 0 0 20px; color: #475569;">
+                    <li>Desktop: 170px de hauteur</li>
+                    <li>Tablette: 140px de hauteur</li>
+                    <li>Mobile: 130px de hauteur</li>
+                    <li>Mini: 110px de hauteur</li>
+                </ul>
+            </div>
+
+            <div class="responsive-demo">
+                <div>
+                    <div class="responsive-cover c1">
+                        <div class="cover-content" style="gap: 8px;">
+                            <div class="cover-icon" style="font-size: 2rem;">📖</div>
+                            <div class="cover-title" style="font-size: 0.7rem;">Exemple</div>
+                        </div>
+                    </div>
+                    <div class="label">Desktop</div>
+                </div>
+                <div>
+                    <div class="responsive-cover c2" style="height: 150px;">
+                        <div class="cover-content" style="gap: 6px;">
+                            <div class="cover-icon" style="font-size: 1.8rem;">📖</div>
+                            <div class="cover-title" style="font-size: 0.6rem;">Exemple</div>
+                        </div>
+                    </div>
+                    <div class="label">Tablet</div>
+                </div>
+                <div>
+                    <div class="responsive-cover c3" style="height: 130px;">
+                        <div class="cover-content" style="gap: 5px;">
+                            <div class="cover-icon" style="font-size: 1.5rem;">📖</div>
+                            <div class="cover-title" style="font-size: 0.55rem;">Exemple</div>
+                        </div>
+                    </div>
+                    <div class="label">Mobile</div>
+                </div>
+                <div>
+                    <div class="responsive-cover c4" style="height: 110px;">
+                        <div class="cover-content" style="gap: 4px;">
+                            <div class="cover-icon" style="font-size: 1.2rem;">📖</div>
+                            <div class="cover-title" style="font-size: 0.5rem;">Exemple</div>
+                        </div>
+                    </div>
+                    <div class="label">Mini</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations -->
+        <div class="section">
+            <h2 class="section-title">ℹ️ Informations Techniques</h2>
+            
+            <div class="info-box">
+                <h3>🎯 Quand utiliser les images génériques?</h3>
+                <p>Les images génériques s'affichent automatiquement quand:</p>
+                <ul style="margin: 10px 0 0 20px; color: #475569;">
+                    <li>✓ Le livre n'a pas d'image de couverture</li>
+                    <li>✓ L'image n'arrive pas à charger (erreur réseau)</li>
+                    <li>✓ L'URL de l'image est invalide</li>
+                    <li>✓ L'image OpenLibrary n'est pas disponible</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h3>🚀 Avantages</h3>
+                <ul style="margin: 10px 0 0 20px; color: #475569;">
+                    <li>✓ Pas de dépendance sur les images externes</li>
+                    <li>✓ Chargement très rapide (CSS pur)</li>
+                    <li>✓ Apparence professionnelle et attractive</li>
+                    <li>✓ Entièrement responsive</li>
+                    <li>✓ Bonne accessibilité</li>
+                    <li>✓ Facile à personnaliser</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h3>🎨 Personnalisation</h3>
+                <p>Pour modifier les couleurs, éditez simplement les dégradés CSS dans le fichier Reader.jsx:</p>
+                <code style="display: block; background: #f1f5f9; padding: 10px; border-radius: 5px; color: #0f172a; font-family: 'Courier New', monospace; margin-top: 10px; overflow-x: auto;">
+.bk-cover-local.c1 { <br/>
+&nbsp;&nbsp;background: linear-gradient(135deg, #couleur1 0%, #couleur2 50%, #couleur1 100%); <br/>
+}
+                </code>
+            </div>
+        </div>
+
+        <footer>
+            <p>📚 Bibliothèque UAC - Images Génériques v1.0</p>
+            <p>Mai 2026</p>
+        </footer>
+    </div>
+</body>
+</html>

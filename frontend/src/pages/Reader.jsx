@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
 import BookDetailsPanel from '../panels/BookDetailsPanel';
+import { GenericBookCover, OnlineBookCover } from '../components/BookCover';
  
 /* ═══════════════════════════════════════════════════════════
    STYLES
@@ -224,11 +225,12 @@ const CSS = `
   border-radius: var(--bk-radius); overflow: hidden; cursor: pointer;
   display: flex; flex-direction: column;
   transition: transform var(--bk-transition), box-shadow var(--bk-transition), border-color var(--bk-transition);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 .bk-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(15,23,42,.10);
-  border-color: #93c5fd;
+  transform: translateY(-6px);
+  box-shadow: 0 16px 32px rgba(15,23,42,.15);
+  border-color: #60a5fa;
 }
  
 /* ── couverture locale (placeholder coloré) ── */
@@ -236,40 +238,36 @@ const CSS = `
   height: 170px; position: relative; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
 }
-.bk-cover-local.c1 { background: linear-gradient(145deg,#dbeafe,#bfdbfe); }
-.bk-cover-local.c2 { background: linear-gradient(145deg,#dcfce7,#bbf7d0); }
-.bk-cover-local.c3 { background: linear-gradient(145deg,#fef3c7,#fde68a); }
-.bk-cover-local.c4 { background: linear-gradient(145deg,#fce7f3,#fbcfe8); }
-.bk-cover-local.c5 { background: linear-gradient(145deg,#ede9fe,#ddd6fe); }
-.bk-cover-local.c6 { background: linear-gradient(145deg,#ffedd5,#fed7aa); }
- 
+.bk-cover-local.c1 { background: linear-gradient(135deg, #0f4c75 0%, #3282b8 50%, #0f4c75 100%); }
+.bk-cover-local.c2 { background: linear-gradient(135deg, #0d5c3f 0%, #16a34a 50%, #0d5c3f 100%); }
+.bk-cover-local.c3 { background: linear-gradient(135deg, #8b4513 0%, #d97706 50%, #8b4513 100%); }
+.bk-cover-local.c4 { background: linear-gradient(135deg, #7d0d57 0%, #db2777 50%, #7d0d57 100%); }
+.bk-cover-local.c5 { background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #4c1d95 100%); }
+.bk-cover-local.c6 { background: linear-gradient(135deg, #7c2d12 0%, #ea580c 50%, #7c2d12 100%); }
+
 .bk-spine {
-  position: absolute; left: 0; top: 0; bottom: 0; width: 6px;
+  position: absolute; left: 0; top: 0; bottom: 0; width: 8px;
 }
-.bk-cover-local.c1 .bk-spine { background: linear-gradient(180deg,#2563eb,#1e40af); }
-.bk-cover-local.c2 .bk-spine { background: linear-gradient(180deg,#16a34a,#14532d); }
-.bk-cover-local.c3 .bk-spine { background: linear-gradient(180deg,#d97706,#92400e); }
-.bk-cover-local.c4 .bk-spine { background: linear-gradient(180deg,#db2777,#9d174d); }
-.bk-cover-local.c5 .bk-spine { background: linear-gradient(180deg,#7c3aed,#4c1d95); }
-.bk-cover-local.c6 .bk-spine { background: linear-gradient(180deg,#ea580c,#7c2d12); }
- 
+.bk-cover-local.c1 .bk-spine { background: linear-gradient(180deg,#1e40af,#0c3c7a); box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+.bk-cover-local.c2 .bk-spine { background: linear-gradient(180deg,#15803d,#0a3e2a); box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+.bk-cover-local.c3 .bk-spine { background: linear-gradient(180deg,#c84400,#6b3410); box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+.bk-cover-local.c4 .bk-spine { background: linear-gradient(180deg,#be185d,#6b0f47); box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+.bk-cover-local.c5 .bk-spine { background: linear-gradient(180deg,#6d28d9,#371d5e); box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+.bk-cover-local.c6 .bk-spine { background: linear-gradient(180deg,#d97706,#8b2b0d); box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+
 .bk-cover-ph {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: 7px; padding: 0 16px; z-index: 1;
+  gap: 12px; padding: 0 16px; z-index: 1;
 }
-.bk-cover-ph-icon { font-size: 2.4rem; opacity: .35; }
+.bk-cover-ph-icon { font-size: 3.5rem; opacity: .7; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
 .bk-cover-ph-title {
-  font-size: .68rem; font-weight: 700; color: #475569;
-  text-align: center; text-transform: uppercase; letter-spacing: .06em;
-  line-height: 1.3;
-  display: -webkit-box; -webkit-line-clamp: 2;
+  font-size: .82rem; font-weight: 800; color: #ffffff;
+  text-align: center; text-transform: uppercase; letter-spacing: .08em;
+  line-height: 1.4;
+  display: -webkit-box; -webkit-line-clamp: 3;
   -webkit-box-orient: vertical; overflow: hidden;
-}
- 
-/* ── couverture en ligne (image réelle) ── */
-.bk-cover-online {
-  height: 170px; position: relative; overflow: hidden;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
   background: #ede9fe;
 }
 .bk-cover-online img {
@@ -284,26 +282,29 @@ const CSS = `
 /* badges sur couverture */
 .bk-badge-dispo {
   position: absolute; top: 8px; right: 8px; z-index: 2;
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 3px 9px; border-radius: 20px; font-size: .68rem; font-weight: 700;
-  backdrop-filter: blur(6px);
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 20px; font-size: .7rem; font-weight: 700;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
-.bk-badge-dispo.ok   { background: rgba(240,253,244,.92); color: #166534; border: 1px solid #a7f3d0; }
-.bk-badge-dispo.no   { background: rgba(254,242,242,.92); color: #991b1b; border: 1px solid #fecaca; }
+.bk-badge-dispo.ok   { background: rgba(34, 197, 94, 0.95); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
+.bk-badge-dispo.no   { background: rgba(239, 68, 68, 0.95); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
 .bk-badge-free {
   position: absolute; top: 8px; left: 8px; z-index: 2;
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 3px 9px; border-radius: 20px; font-size: .68rem; font-weight: 700;
-  background: rgba(237,233,254,.92); color: #4c1d95; border: 1px solid #c4b5fd;
-  backdrop-filter: blur(6px);
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 20px; font-size: .7rem; font-weight: 700;
+  background: rgba(99, 102, 241, 0.95); color: #fff; border: 1px solid rgba(255,255,255,0.3);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
-.bk-badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.bk-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
  
 .bk-code-tag {
   position: absolute; bottom: 8px; left: 8px; z-index: 2;
-  background: rgba(15,23,42,.65); color: #fff;
-  font-size: .62rem; font-weight: 700; font-family: 'Courier New', monospace;
-  padding: 2px 8px; border-radius: 5px; backdrop-filter: blur(4px);
+  background: rgba(15,23,42,.85); color: #fff;
+  font-size: .65rem; font-weight: 700; font-family: 'Courier New', monospace;
+  padding: 3px 8px; border-radius: 5px; backdrop-filter: blur(4px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
  
 /* ── corps carte ── */
@@ -377,10 +378,442 @@ const CSS = `
 .bk-empty p  { font-size: .83rem; color: var(--bk-text-3); margin: 0; }
  
 /* ── RESPONSIVE ── */
+
+/* Tablettes et petits écrans (1024px) */
+@media (max-width: 1024px) {
+  .bk-sidebar { width: 180px; }
+  .bk-brand-name { font-size: .85rem; }
+  .bk-nav-section { font-size: .6rem; }
+  .bk-nav-item { font-size: .75rem; padding: 8px 10px; }
+  .bk-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+  .bk-topbar h1 { font-size: 1.1rem; }
+  .bk-search-box input { width: 150px; }
+  .bk-content { padding: 16px; }
+}
+
+/* Tablettes en mode portrait (768px) */
 @media (max-width: 768px) {
-  .bk-sidebar { display: none; }
-  .bk-grid { grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 12px; }
-  .bk-stats { grid-template-columns: 1fr 1fr; }
+  .bk-layout { flex-direction: column; }
+  
+  .bk-sidebar {
+    width: 100%;
+    min-height: auto;
+    height: auto;
+    flex-direction: row;
+    border-right: none;
+    border-bottom: 1px solid var(--bk-border);
+    padding: 0;
+    position: static;
+    overflow-x: auto;
+    flex-wrap: wrap;
+  }
+  
+  .bk-brand {
+    padding: 12px 16px;
+    border-bottom: none;
+    border-right: 1px solid var(--bk-border);
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  
+  .bk-brand-icon { width: 30px; height: 30px; font-size: 0.9rem; }
+  .bk-brand-name { font-size: .8rem; }
+  .bk-brand-sub { font-size: .6rem; }
+  
+  .bk-nav-section {
+    display: none;
+  }
+  
+  .bk-nav-item {
+    padding: 6px 12px;
+    font-size: .7rem;
+    margin: 0;
+  }
+  
+  .bk-sidebar-bottom {
+    display: none;
+  }
+  
+  .bk-main { flex: 1; }
+  
+  .bk-topbar {
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 16px;
+  }
+  
+  .bk-topbar h1 {
+    font-size: 1rem;
+    margin-right: 0;
+  }
+  
+  .bk-search-box {
+    width: 100%;
+    order: 2;
+  }
+  
+  .bk-search-box input {
+    width: 100%;
+    font-size: .75rem;
+  }
+  
+  .bk-content {
+    padding: 12px;
+  }
+  
+  .bk-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+  }
+  
+  .bk-stats {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  
+  .bk-stat {
+    padding: 10px 12px;
+    font-size: .85rem;
+  }
+  
+  .bk-stat-n { font-size: 1.3rem; }
+  .bk-stat-l { font-size: .65rem; }
+  
+  .bk-cats {
+    gap: 6px;
+    margin-bottom: 14px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 8px;
+  }
+  
+  .bk-cat {
+    padding: 5px 12px;
+    font-size: .7rem;
+    flex-shrink: 0;
+  }
+  
+  .bk-cover-local {
+    height: 140px;
+  }
+  
+  .bk-cover-online {
+    height: 140px;
+  }
+  
+  .bk-card-title {
+    font-size: .75rem;
+  }
+  
+  .bk-card-author {
+    font-size: .65rem;
+  }
+  
+  .bk-card-meta {
+    font-size: .6rem;
+  }
+  
+  .bk-card-ex-label {
+    font-size: .6rem;
+  }
+  
+  .bk-card-ex-val {
+    font-size: .65rem;
+  }
+  
+  .bk-btn-details, .bk-btn-online {
+    font-size: .7rem;
+    padding: 6px;
+  }
+  
+  .bk-cover-ph-title {
+    font-size: .6rem;
+  }
+  
+  .bk-section-label {
+    font-size: .7rem;
+    margin-bottom: 10px;
+  }
+  
+  .bk-loading, .bk-empty {
+    padding: 40px 16px;
+  }
+  
+  .bk-empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+  }
+  
+  .bk-empty h3 {
+    font-size: 0.95rem;
+    margin: 0 0 4px;
+  }
+  
+  .bk-empty p {
+    font-size: .75rem;
+  }
+}
+
+/* Téléphones (600px) */
+@media (max-width: 600px) {
+  .bk-topbar {
+    padding: 10px 12px;
+  }
+  
+  .bk-topbar h1 {
+    font-size: 0.9rem;
+  }
+  
+  .bk-search-box {
+    padding: 6px 10px;
+  }
+  
+  .bk-search-box input {
+    font-size: .7rem;
+    width: 100%;
+  }
+  
+  .bk-search-icon {
+    font-size: 0.8rem;
+  }
+  
+  .bk-content {
+    padding: 10px;
+  }
+  
+  .bk-grid {
+    grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+    gap: 8px;
+  }
+  
+  .bk-stats {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .bk-stat {
+    padding: 8px 10px;
+  }
+  
+  .bk-stat-n {
+    font-size: 1.2rem;
+  }
+  
+  .bk-stat-l {
+    font-size: .6rem;
+  }
+  
+  .bk-cats {
+    gap: 5px;
+    margin-bottom: 12px;
+  }
+  
+  .bk-cat {
+    padding: 4px 10px;
+    font-size: .65rem;
+  }
+  
+  .bk-cover-local {
+    height: 130px;
+  }
+  
+  .bk-cover-online {
+    height: 130px;
+  }
+  
+  .bk-cover-ph-icon {
+    font-size: 2rem;
+  }
+  
+  .bk-cover-ph-title {
+    font-size: .55rem;
+  }
+  
+  .bk-body {
+    padding: 8px 10px;
+    gap: 3px;
+  }
+  
+  .bk-card-genre {
+    font-size: .6rem;
+    padding: 1px 6px;
+  }
+  
+  .bk-card-title {
+    font-size: .7rem;
+  }
+  
+  .bk-card-author {
+    font-size: .6rem;
+  }
+  
+  .bk-card-meta {
+    font-size: .55rem;
+    gap: 5px;
+  }
+  
+  .bk-card-exemplaires {
+    padding: 4px 6px;
+    gap: 4px;
+    font-size: .65rem;
+  }
+  
+  .bk-card-ex-label {
+    font-size: .55rem;
+  }
+  
+  .bk-card-ex-val {
+    font-size: .6rem;
+  }
+  
+  .bk-btn-details, .bk-btn-online {
+    font-size: .65rem;
+    padding: 5px;
+  }
+  
+  .bk-badge-dispo {
+    top: 4px;
+    right: 4px;
+    padding: 2px 6px;
+    font-size: .6rem;
+  }
+  
+  .bk-badge-free {
+    top: 4px;
+    left: 4px;
+    padding: 2px 6px;
+    font-size: .6rem;
+  }
+  
+  .bk-code-tag {
+    bottom: 4px;
+    left: 4px;
+    padding: 1px 5px;
+    font-size: .55rem;
+  }
+  
+  .bk-section-label {
+    font-size: .65rem;
+    margin-bottom: 8px;
+  }
+  
+  .bk-card-footer {
+    padding: 6px 8px;
+  }
+  
+  .bk-loading, .bk-empty {
+    padding: 30px 12px;
+  }
+  
+  .bk-spinner {
+    width: 30px;
+    height: 30px;
+    margin: 0 auto 10px;
+  }
+  
+  .bk-empty-icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+  }
+  
+  .bk-empty h3 {
+    font-size: 0.85rem;
+  }
+  
+  .bk-empty p {
+    font-size: .7rem;
+  }
+}
+
+/* Ultra-petits écrans (420px) */
+@media (max-width: 420px) {
+  .bk-brand {
+    padding: 10px 12px;
+  }
+  
+  .bk-brand-icon { width: 26px; height: 26px; font-size: 0.75rem; }
+  .bk-brand-name { font-size: .7rem; }
+  .bk-brand-sub { font-size: .55rem; }
+  
+  .bk-nav-item {
+    padding: 5px 8px;
+    font-size: .65rem;
+  }
+  
+  .bk-topbar {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  
+  .bk-topbar h1 {
+    font-size: 0.8rem;
+  }
+  
+  .bk-search-box {
+    padding: 5px 8px;
+  }
+  
+  .bk-search-box input {
+    font-size: .65rem;
+  }
+  
+  .bk-content {
+    padding: 8px;
+  }
+  
+  .bk-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 6px;
+  }
+  
+  .bk-stats {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  
+  .bk-stat {
+    padding: 6px 8px;
+  }
+  
+  .bk-stat-n {
+    font-size: 1rem;
+  }
+  
+  .bk-stat-l {
+    font-size: .55rem;
+  }
+  
+  .bk-cover-local {
+    height: 110px;
+  }
+  
+  .bk-cover-online {
+    height: 110px;
+  }
+  
+  .bk-cover-ph-icon {
+    font-size: 1.5rem;
+  }
+  
+  .bk-body {
+    padding: 6px 8px;
+  }
+  
+  .bk-card-title {
+    font-size: .65rem;
+  }
+  
+  .bk-card-author {
+    font-size: .55rem;
+  }
+  
+  .bk-btn-details, .bk-btn-online {
+    font-size: .6rem;
+    padding: 4px;
+  }
 }
 `;
  
@@ -390,10 +823,6 @@ function injectCSS(id, css) {
   s.id = id; s.textContent = css;
   document.head.appendChild(s);
 }
- 
-/* ── Couleur de couverture locale selon index ── */
-const COLORS = ['c1','c2','c3','c4','c5','c6'];
-function coverColor(idx) { return COLORS[idx % COLORS.length]; }
  
 /* ── Initiales ── */
 function initials(user) {
@@ -405,61 +834,13 @@ function initials(user) {
 /* ══════════════════════════════
    COMPOSANT COUVERTURE LOCALE
 ══════════════════════════════ */
-function LocalCover({ book, idx }) {
-  const cls = coverColor(idx);
-  const avail = book.exemplaires_disponibles > 0;
-  return (
-    <div className={`bk-cover-local ${cls}`}>
-      <div className="bk-spine"/>
-      <div className="bk-cover-ph">
-        <span className="bk-cover-ph-icon">📖</span>
-        <span className="bk-cover-ph-title">{book.titre}</span>
-      </div>
-      <span className={`bk-badge-dispo ${avail ? 'ok' : 'no'}`}>
-        <span className="bk-badge-dot"/>
-        {avail ? `${book.exemplaires_disponibles}/${book.total_exemplaires}` : 'Indisponible'}
-      </span>
-      <span className="bk-code-tag">{book.code}</span>
-    </div>
-  );
-}
- 
-/* ══════════════════════════════
-   COMPOSANT COUVERTURE EN LIGNE (image OpenLibrary)
-══════════════════════════════ */
-function OnlineCover({ book }) {
-  const [imgError, setImgError] = useState(false);
-  const coverId = book.cover_i;
-  const hasImg  = coverId && !imgError;
-  const imgUrl  = `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
- 
-  return (
-    <div className="bk-cover-online">
-      {hasImg ? (
-        <img
-          src={imgUrl}
-          alt={`Couverture de ${book.title}`}
-          onError={() => setImgError(true)}
-          loading="lazy"
-        />
-      ) : (
-        <div className="bk-cover-ph">
-          <span className="bk-cover-ph-icon">📘</span>
-          <span className="bk-cover-ph-title" style={{color:'#4c1d95'}}>{book.title}</span>
-        </div>
-      )}
-      <span className="bk-badge-free">🎁 Gratuit</span>
-    </div>
-  );
-}
- 
 /* ══════════════════════════════
    CARTE LIVRE LOCAL
 ══════════════════════════════ */
 function LocalBookCard({ book, idx, onDetailsClick }) {
   return (
     <div className="bk-card" onClick={() => onDetailsClick(book)}>
-      <LocalCover book={book} idx={idx}/>
+      <GenericBookCover book={book} index={idx} size="normal" />
       <div className="bk-body">
         {(book.genre || book.theme) && (
           <span className="bk-card-genre">🏷 {book.genre || book.theme}</span>
@@ -496,7 +877,7 @@ function OnlineBookCard({ book }) {
  
   return (
     <div className="bk-card">
-      <OnlineCover book={book}/>
+      <OnlineBookCover book={book} />
       <div className="bk-body">
         {subjects && (
           <span className="bk-card-genre" style={{background:'#ede9fe',color:'#6d28d9',borderColor:'#c4b5fd'}}>
