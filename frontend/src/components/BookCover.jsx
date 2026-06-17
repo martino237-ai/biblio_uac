@@ -24,6 +24,70 @@ function getCoverColor(index) {
   return COVER_COLORS[index % COVER_COLORS.length];
 }
 
+const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
+
+function normalizeBookImageUrl(value) {
+  if (!value) return null;
+  const src = String(value).trim();
+  if (!src) return null;
+  if (/^https?:\/\//i.test(src)) return src;
+  if (src.startsWith('/')) return src;
+  return `/${src.replace(/^public\//, '').replace(/^\/+/, '')}`;
+}
+
+function sanitizeBookFileName(str) {
+  return String(str || '')
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\s\\\/]+/g, '_')
+    .replace(/[^\w.-]/g, '')
+    .toLowerCase();
+}
+
+function buildImageUrlsFromBase(raw) {
+  const trimmed = String(raw || '').trim();
+  if (!trimmed) return [];
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return [trimmed];
+  }
+
+  const base = trimmed.replace(/^public\//, '').replace(/^\/+/, '');
+  if (IMAGE_EXTENSIONS.some((ext) => base.toLowerCase().endsWith(ext))) {
+    return [`/${base}`];
+  }
+
+  return IMAGE_EXTENSIONS.map((ext) => `/${base}${ext}`);
+}
+
+export function getBookCoverCandidates(book) {
+  if (!book) return [];
+  const urls = [];
+
+  if (book.image_url) {
+    urls.push(...buildImageUrlsFromBase(book.image_url));
+  }
+
+  const candidates = [book.code, book.titre, book.title, book.isbn]
+    .filter(Boolean)
+    .map(sanitizeBookFileName)
+    .filter(Boolean);
+
+  for (const candidate of candidates) {
+    for (const ext of IMAGE_EXTENSIONS) {
+      urls.push(`/images_livres/${candidate}${ext}`);
+    }
+  }
+
+  return [...new Set(urls)];
+}
+
+export function getBookCoverUrl(book) {
+  const candidates = getBookCoverCandidates(book);
+  return candidates.length > 0 ? candidates[0] : null;
+}
+
 /* ════════════════════════════════════════════════════════════
    COUVERTURE GÉNÉRIQUE - VERSION SIMPLE
 ════════════════════════════════════════════════════════════ */
@@ -269,11 +333,85 @@ export function OnlineBookCover({ book, size = 'normal' }) {
 /* ════════════════════════════════════════════════════════════
    COUVERTURE PAR DÉFAUT (Sélectionne automatique)
 ════════════════════════════════════════════════════════════ */
+function LocalBookCover({ book, imageUrls = [], index = 0, size = 'normal' }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const validUrls = Array.isArray(imageUrls) ? imageUrls.filter(Boolean) : [];
+  const src = validUrls[currentIndex] || null;
+
+  const sizeConfig = {
+    small: { height: '120px' },
+    normal: { height: '170px' },
+    large: { height: '230px' },
+  };
+  const config = sizeConfig[size] || sizeConfig.normal;
+
+  const hasImage = Boolean(src);
+
+  return (
+    <div
+      style={{
+        height: config.height,
+        position: 'relative',
+        overflow: 'hidden',
+        borderRadius: '10px',
+        background: hasImage ? '#f3f4f6' : 'transparent',
+      }}
+    >
+      {hasImage ? (
+        <img
+          src={src}
+          alt={`Couverture de ${book.titre || book.title || 'livre'}`}
+          onError={() => {
+            if (currentIndex + 1 < validUrls.length) {
+              setCurrentIndex(currentIndex + 1);
+            }
+          }}
+          loading="lazy"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            display: 'block',
+          }}
+        />
+      ) : (
+        <GenericBookCover book={book} index={index} size={size} />
+      )}
+    </div>
+  );
+}
+
 export function BookCover({ book, index = 0, size = 'normal', isOnline = false }) {
   if (isOnline) {
     return <OnlineBookCover book={book} size={size} />;
   }
+  const imageUrls = getBookCoverCandidates(book);
+  if (imageUrls.length) {
+    return <LocalBookCover book={book} imageUrls={imageUrls} index={index} size={size} />;
+  }
   return <GenericBookCover book={book} index={index} size={size} />;
+}
+
+export function BookCoverImage({ book, alt, className, style }) {
+  const imageUrls = getBookCoverCandidates(book);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const src = imageUrls[currentIndex] || null;
+
+  if (!src) return null;
+
+  return (
+    <img
+      src={src}
+      alt={alt || `Couverture de ${book.titre || book.title || 'livre'}`}
+      className={className}
+      style={style}
+      onError={() => {
+        if (currentIndex + 1 < imageUrls.length) {
+          setCurrentIndex(currentIndex + 1);
+        }
+      }}
+    />
+  );
 }
 
 export default BookCover;

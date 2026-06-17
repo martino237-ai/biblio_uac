@@ -4,6 +4,7 @@ import api from "../api/axios";
 import Modal from "../shared/Modal";
 import SearchBar from "../shared/SearchBar";
 import BookDetailsPanel from "./BookDetailsPanel";
+import { getBookCoverCandidates } from "../components/BookCover";
  
 /* ═══════════════════════════════════════════════════════════
    STYLES  —  injectés une seule fois dans <head>
@@ -386,22 +387,28 @@ function F({ label, s2, children }) {
    Couverture — image réelle OU placeholder coloré
 ══════════════════════════════════════════════ */
 function BookCover({ book, index }) {
-  const [imgError, setImgError] = useState(false);
-  const hasImage = book.image_url && !imgError;
- 
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const imageUrls = getBookCoverCandidates(book);
+  const imageUrl = imageUrls[currentIndex] || null;
+  const hasImage = Boolean(imageUrl);
+
   return (
     <div className="book-cover-wrap">
       {/* Spine (seulement sur placeholder) */}
       {!hasImage && <div className="book-spine" />}
- 
+
       {hasImage ? (
         /* ── IMAGE RÉELLE ── */
         <>
           <img
             className="book-real-img"
-            src={book.image_url}
+            src={imageUrl}
             alt={`Couverture de ${book.titre}`}
-            onError={() => setImgError(true)}
+            onError={() => {
+              if (currentIndex + 1 < imageUrls.length) {
+                setCurrentIndex(currentIndex + 1);
+              }
+            }}
           />
           <div className="book-img-overlay" />
         </>

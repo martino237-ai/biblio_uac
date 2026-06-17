@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
 import BookDetailsPanel from '../panels/BookDetailsPanel';
-import { GenericBookCover, OnlineBookCover } from '../components/BookCover';
+import { GenericBookCover, OnlineBookCover, getBookCoverCandidates } from '../components/BookCover';
  
 /* ═══════════════════════════════════════════════════════════
    STYLES
@@ -270,11 +270,13 @@ const CSS = `
   text-shadow: 0 2px 4px rgba(0,0,0,0.3);
   background: #ede9fe;
 }
-.bk-cover-online img {
+.bk-cover-online img,
+.bk-cover-local-img {
   width: 100%; height: 100%; object-fit: cover; display: block;
   transition: transform .4s ease;
 }
-.bk-card:hover .bk-cover-online img { transform: scale(1.06); }
+.bk-card:hover .bk-cover-online img,
+.bk-card:hover .bk-cover-local-img { transform: scale(1.06); }
 .bk-cover-online .bk-cover-ph {
   position: absolute; inset: 0; width: 100%; height: 100%;
 }
@@ -838,9 +840,35 @@ function initials(user) {
    CARTE LIVRE LOCAL
 ══════════════════════════════ */
 function LocalBookCard({ book, idx, onDetailsClick }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const imageUrls = getBookCoverCandidates(book);
+  const imageUrl = imageUrls[currentIndex] || null;
+  const hasImage = Boolean(imageUrl);
+  const available = (book.exemplaires_disponibles ?? 0) > 0;
+
   return (
     <div className="bk-card" onClick={() => onDetailsClick(book)}>
-      <GenericBookCover book={book} index={idx} size="normal" />
+      {hasImage ? (
+        <div className="bk-cover-local">
+          <img
+            className="bk-cover-local-img"
+            src={imageUrl}
+            alt={`Couverture de ${book.titre || book.title || 'livre'}`}
+            onError={() => {
+              if (currentIndex + 1 < imageUrls.length) {
+                setCurrentIndex(currentIndex + 1);
+              }
+            }}
+          />
+          <span className={`bk-badge-dispo ${available ? 'ok' : 'no'}`}>
+            <span className="bk-badge-dot" />
+            {available ? 'Disponible' : 'Indisponible'}
+          </span>
+          {book.code && <span className="bk-code-tag">{book.code}</span>}
+        </div>
+      ) : (
+        <GenericBookCover book={book} index={idx} size="normal" />
+      )}
       <div className="bk-body">
         {(book.genre || book.theme) && (
           <span className="bk-card-genre">🏷 {book.genre || book.theme}</span>

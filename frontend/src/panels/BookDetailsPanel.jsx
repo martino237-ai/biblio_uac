@@ -1,7 +1,8 @@
 // frontend/src/panels/BookDetailsPanel.jsx
-import React, { useState } from "react";
+import React from "react";
 import { useTranslation } from 'react-i18next';
 import Modal from "../shared/Modal";
+import { getBookCoverCandidates, BookCoverImage } from "../components/BookCover";
 // Note: details.css remplacé par styles intégrés ci-dessous (plus maintenable)
  
 /* ═══════════════════════════════════════════════════════════
@@ -310,8 +311,8 @@ export default function BookDetailsPanel({ book, onClose }) {
   if (!book) return null;
  
   const disponible = book.exemplaires_disponibles > 0;
-  const coverUrl   = book.image_url; // null → placeholder maison (pas placehold.co)
- 
+  const coverUrls  = getBookCoverCandidates(book);
+
   const detailItems = [
     { label: 'Auteur',        value: book.auteur },
     { label: 'Éditeur',       value: book.editeur },
@@ -342,8 +343,8 @@ export default function BookDetailsPanel({ book, onClose }) {
           <div className="bd-cover-col">
             <div className="bd-cover-frame">
               <div className="bd-cover-spine"/>
-              {coverUrl ? (
-                <img src={coverUrl} alt={`Couverture de ${book.titre}`}/>
+              {coverUrls.length ? (
+                <BookCoverImage book={book} className="bd-cover-img" />
               ) : (
                 <div className="bd-cover-placeholder">
                   <span className="cp-icon">📖</span>
