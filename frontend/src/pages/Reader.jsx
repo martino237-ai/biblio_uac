@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
 import BookDetailsPanel from '../panels/BookDetailsPanel';
+import SettingsPanel from '../panels/SettingsPanel';
 import { GenericBookCover, OnlineBookCover, getBookCoverCandidates } from '../components/BookCover';
  
 /* ═══════════════════════════════════════════════════════════
@@ -26,6 +27,28 @@ const CSS = `
   --bk-border:     #e2e8f0;
   --bk-surface:    #ffffff;
   --bk-bg:         #f1f5f9;
+  --bk-radius:     14px;
+  --bk-radius-sm:  9px;
+  --bk-transition: .2s cubic-bezier(.4,0,.2,1);
+}
+
+/* DARK MODE - overrides when <html> has class 'dark' */
+.dark {
+  --bk-primary:    #60a5fa;
+  --bk-primary-dk: #3b82f6;
+  --bk-primary-lt: rgba(96,165,250,0.08);
+  --bk-success:    #34d399;
+  --bk-success-lt: rgba(16,185,129,0.06);
+  --bk-danger:     #fb7185;
+  --bk-danger-lt:  rgba(251,113,133,0.06);
+  --bk-purple:     #a78bfa;
+  --bk-purple-lt:  rgba(167,139,250,0.06);
+  --bk-text:       #e6eef8;
+  --bk-text-2:     #c7d2da;
+  --bk-text-3:     #94a3b8;
+  --bk-border:     #1f2937;
+  --bk-surface:    #071029;
+  --bk-bg:         #041025;
   --bk-radius:     14px;
   --bk-radius-sm:  9px;
   --bk-transition: .2s cubic-bezier(.4,0,.2,1);
@@ -214,9 +237,10 @@ const CSS = `
 }
 .bk-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  gap: 20px;
   margin-bottom: 24px;
+  align-items: start;
 }
  
 /* ── CARTE LIVRE ── */
@@ -423,7 +447,7 @@ const CSS = `
   .bk-brand-sub { font-size: .6rem; }
   
   .bk-nav-section {
-    display: none;
+    display: block;
   }
   
   .bk-nav-item {
@@ -433,7 +457,14 @@ const CSS = `
   }
   
   .bk-sidebar-bottom {
-    display: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-top: none;
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: flex-start;
   }
   
   .bk-main { flex: 1; }
@@ -497,36 +528,40 @@ const CSS = `
   }
   
   .bk-cover-local {
-    height: 140px;
+    height: 180px;
   }
   
   .bk-cover-online {
-    height: 140px;
+    height: 180px;
+  }
+  
+  .bk-card {
+    min-height: 420px;
   }
   
   .bk-card-title {
-    font-size: .75rem;
+    font-size: .82rem;
   }
   
   .bk-card-author {
-    font-size: .65rem;
+    font-size: .72rem;
   }
   
   .bk-card-meta {
-    font-size: .6rem;
+    font-size: .7rem;
   }
   
   .bk-card-ex-label {
-    font-size: .6rem;
+    font-size: .68rem;
   }
   
   .bk-card-ex-val {
-    font-size: .65rem;
+    font-size: .75rem;
   }
   
   .bk-btn-details, .bk-btn-online {
-    font-size: .7rem;
-    padding: 6px;
+    font-size: .78rem;
+    padding: 8px;
   }
   
   .bk-cover-ph-title {
@@ -817,6 +852,18 @@ const CSS = `
     padding: 4px;
   }
 }
+
+/* Modal Paramètres */
+.bk-settings-modal {
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.35); z-index: 1200;
+}
+.bk-modal-content {
+  background: var(--bk-surface); padding: 16px; border-radius: 12px; width: min(640px, 95%);
+  box-shadow: 0 8px 32px rgba(2,6,23,0.25); border: 1px solid var(--bk-border);
+}
+.bk-modal-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
+.bk-close-btn { background:none; border:none; font-size:1.05rem; cursor:pointer; }
 `;
  
 function injectCSS(id, css) {
@@ -840,6 +887,7 @@ function initials(user) {
    CARTE LIVRE LOCAL
 ══════════════════════════════ */
 function LocalBookCard({ book, idx, onDetailsClick }) {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const imageUrls = getBookCoverCandidates(book);
   const imageUrl = imageUrls[currentIndex] || null;
@@ -853,7 +901,7 @@ function LocalBookCard({ book, idx, onDetailsClick }) {
           <img
             className="bk-cover-local-img"
             src={imageUrl}
-            alt={`Couverture de ${book.titre || book.title || 'livre'}`}
+            alt={t('Couverture de {{title}}', { title: book.titre || book.title || t('Sans titre') })}
             onError={() => {
               if (currentIndex + 1 < imageUrls.length) {
                 setCurrentIndex(currentIndex + 1);
@@ -862,7 +910,7 @@ function LocalBookCard({ book, idx, onDetailsClick }) {
           />
           <span className={`bk-badge-dispo ${available ? 'ok' : 'no'}`}>
             <span className="bk-badge-dot" />
-            {available ? 'Disponible' : 'Indisponible'}
+            {available ? t('Disponible') : t('Indisponible')}
           </span>
           {book.code && <span className="bk-code-tag">{book.code}</span>}
         </div>
@@ -875,21 +923,21 @@ function LocalBookCard({ book, idx, onDetailsClick }) {
         )}
         <p className="bk-card-title">{book.titre}</p>
         <p className="bk-card-author">
-          {book.auteur || <em style={{color:'#94a3b8'}}>Auteur inconnu</em>}
+          {book.auteur || <em style={{color:'#94a3b8'}}>{t('Auteur inconnu')}</em>}
         </p>
         <div className="bk-card-meta">
           {book.annee_publication && <span>📅 {book.annee_publication}</span>}
           {book.emplacement        && <span>📍 {book.emplacement}</span>}
         </div>
         <div className="bk-card-exemplaires">
-          <span className="bk-card-ex-label">📦 Exemplaires</span>
+          <span className="bk-card-ex-label">📦 {t('Exemplaires')}</span>
           <span className="bk-card-ex-val">
             {book.exemplaires_disponibles}/{book.total_exemplaires}
           </span>
         </div>
       </div>
       <div className="bk-card-footer">
-        <button className="bk-btn-details" onClick={() => onDetailsClick(book)}>👁 Voir les détails</button>
+        <button className="bk-btn-details" onClick={() => onDetailsClick(book)}>👁 {t('Voir les détails')}</button>
       </div>
     </div>
   );
@@ -899,7 +947,8 @@ function LocalBookCard({ book, idx, onDetailsClick }) {
    CARTE LIVRE EN LIGNE
 ══════════════════════════════ */
 function OnlineBookCard({ book }) {
-  const authors  = book.author_name ? book.author_name.slice(0,2).join(', ') : 'Auteur inconnu';
+  const { t } = useTranslation();
+  const authors  = book.author_name ? book.author_name.slice(0,2).join(', ') : t('Auteur inconnu');
   const subjects = book.subject     ? book.subject.slice(0,2).join(' · ')    : '';
   const olKey    = book.key         ? `https://openlibrary.org${book.key}`   : '#';
  
@@ -932,8 +981,8 @@ function OnlineBookCard({ book }) {
           href={olKey}
           target="_blank"
           rel="noopener noreferrer"
-        >
-          🌐 Lire sur OpenLibrary
+          >
+          🌐 {t('Lire sur OpenLibrary')}
         </a>
       </div>
     </div>
@@ -944,14 +993,14 @@ function OnlineBookCard({ book }) {
    COMPOSANT PRINCIPAL
 ══════════════════════════════ */
 const CATEGORIES = [
-  { key:'informatique', label:'💻 Informatique' },
-  { key:'sante',        label:'🏥 Santé' },
-  { key:'droit',        label:'⚖️ Droit' },
-  { key:'education',    label:'🎓 Éducation' },
-  { key:'roman',        label:'📖 Roman' },
-  { key:'science',      label:'🔬 Science' },
-  { key:'histoire',     label:'🏛 Histoire' },
-  { key:'philosophie',  label:'💡 Philosophie' },
+  { key:'informatique', emoji:'💻', labelKey:'Informatique' },
+  { key:'sante',        emoji:'🏥', labelKey:'Santé' },
+  { key:'droit',        emoji:'⚖️', labelKey:'Droit' },
+  { key:'education',    emoji:'🎓', labelKey:'Éducation' },
+  { key:'roman',        emoji:'📖', labelKey:'Roman' },
+  { key:'science',      emoji:'🔬', labelKey:'Science' },
+  { key:'histoire',     emoji:'🏛', labelKey:'Histoire' },
+  { key:'philosophie',  emoji:'💡', labelKey:'Philosophie' },
 ];
  
 export default function Books() {
@@ -967,6 +1016,7 @@ export default function Books() {
   const [onlineLoading, setOnlineLoading] = useState(false);
   const [user,          setUser]          = useState(null);
   const [selectedBook,  setSelectedBook]  = useState(null);
+  const [showSettings,  setShowSettings]  = useState(false);
  
   injectCSS('bk-css', CSS);
  
@@ -1041,7 +1091,7 @@ export default function Books() {
           <div className="bk-brand-icon">📚</div>
           <div>
             <div className="bk-brand-name">Biblio UAC</div>
-            <div className="bk-brand-sub">Espace lecteur</div>
+            <div className="bk-brand-sub">{t('Espace lecteur')}</div>
           </div>
         </div>
  
@@ -1062,6 +1112,14 @@ export default function Books() {
         >
           <span className="bk-nav-icon">🌐</span>
           {t('Livres en ligne')}
+        </button>
+
+        <button
+          className={`bk-nav-item`}
+          onClick={() => setShowSettings(true)}
+        >
+          <span className="bk-nav-icon">⚙️</span>
+          {t('Paramètres')}
         </button>
  
         <div className="bk-sidebar-bottom">
@@ -1084,7 +1142,7 @@ export default function Books() {
         {/* Topbar */}
         <div className="bk-topbar">
           <h1>
-            {page === 'local'  && t('Catalogue des ouvrages')}
+            {page === 'local'  && t('Catalogue des livres')}
             {page === 'online' && t('Livres gratuits en ligne')}
           </h1>
           {page === 'local' && (
@@ -1174,7 +1232,7 @@ export default function Books() {
                     className={`bk-cat${category === cat.key ? ' active' : ''}`}
                     onClick={() => selectCategory(cat.key)}
                   >
-                    {cat.label}
+                    {cat.emoji} {t(cat.labelKey)}
                   </button>
                 ))}
               </div>
@@ -1196,7 +1254,10 @@ export default function Books() {
                 <>
                   <div className="bk-section-label">
                     🌐 {onlineBooks.length} {t('livres gratuits')} · {
-                      CATEGORIES.find(c => c.key === category)?.label || category
+                      (() => {
+                        const selected = CATEGORIES.find(c => c.key === category);
+                        return selected ? `${selected.emoji} ${t(selected.labelKey)}` : category;
+                      })()
                     }
                   </div>
                   <div className="bk-grid">
@@ -1213,6 +1274,14 @@ export default function Books() {
       </div>
 
       {/* MODAL DETAILS */}
+      {showSettings && (
+        <div className="bk-settings-modal" onClick={() => setShowSettings(false)}>
+          <div className="bk-modal-content" onClick={e => e.stopPropagation()}>
+            <SettingsPanel inModal={true} onClose={() => setShowSettings(false)} />
+          </div>
+        </div>
+      )}
+
       {selectedBook && (
         <BookDetailsPanel
           book={selectedBook}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
 
-export default function SettingsPanel() {
+export default function SettingsPanel({ inModal = false, onClose = null }) {
   const { t, i18n } = useTranslation();
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const [language, setLanguage] = useState(localStorage.getItem('lang') || 'fr');
@@ -277,8 +277,20 @@ export default function SettingsPanel() {
     }
   };
 
+  const Container = ({ children }) => (
+    inModal ? (
+      <div className="p-2" style={{ maxWidth: 820 }}>
+        {children}
+      </div>
+    ) : (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 md:p-8">
+        {children}
+      </div>
+    )
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 md:p-8">
+    <Container>
       {/* Alerte de confirmation */}
       {showSaveAlert && (
         <div className="fixed top-4 right-4 z-50 animate-slideIn">
@@ -292,6 +304,13 @@ export default function SettingsPanel() {
       )}
 
       <div className="max-w-4xl mx-auto">
+        {inModal && (
+          <div style={{display:'flex', justifyContent:'flex-end', marginBottom:8}}>
+            {onClose && (
+              <button onClick={onClose} className="px-3 py-1 rounded-lg border">✖</button>
+            )}
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <aside className="md:col-span-1 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
             <h2 className="text-lg font-semibold mb-4">{t('Paramètres')}</h2>
@@ -361,6 +380,6 @@ export default function SettingsPanel() {
           animation: slideIn 0.3s ease-out;
         }
       `}</style>
-    </div>
+    </Container>
   );
 }

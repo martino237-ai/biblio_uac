@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 /* ════════════════════════════════════════════════════════════
    COMPOSANT RÉUTILISABLE: COUVERTURE DE LIVRE GÉNÉRIQUE
@@ -98,6 +99,7 @@ export function GenericBookCover({
   showSpine = true,
   showCode = true
 }) {
+  const { t } = useTranslation();
   const colors = getCoverColor(index);
   
   // Dimensions selon la taille
@@ -167,7 +169,7 @@ export function GenericBookCover({
             maxWidth: '100%',
           }}
         >
-          {book.titre || book.title || 'Sans titre'}
+          {book.titre || book.title || t('Sans titre')}
         </div>
       </div>
 
@@ -198,7 +200,7 @@ export function GenericBookCover({
           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'currentColor' }} />
           {book.exemplaires_disponibles > 0 
             ? `${book.exemplaires_disponibles}/${book.total_exemplaires}`
-            : 'Indisponible'
+            : t('Indisponible')
           }
         </div>
       )}
@@ -232,6 +234,7 @@ export function GenericBookCover({
    COUVERTURE EN LIGNE (OpenLibrary)
 ════════════════════════════════════════════════════════════ */
 export function OnlineBookCover({ book, size = 'normal' }) {
+  const { t } = useTranslation();
   const [imgError, setImgError] = useState(false);
   const coverId = book.cover_i;
   const hasImg = coverId && !imgError;
@@ -258,7 +261,7 @@ export function OnlineBookCover({ book, size = 'normal' }) {
       {hasImg ? (
         <img
           src={imgUrl}
-          alt={book.title}
+          alt={t('Couverture de {{title}}', { title: book.title || t('Sans titre') })}
           onError={() => setImgError(true)}
           loading="lazy"
           style={{
@@ -324,7 +327,7 @@ export function OnlineBookCover({ book, size = 'normal' }) {
           boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
         }}
       >
-        🎁 Gratuit
+        🎁 {t('Gratuit')}
       </div>
     </div>
   );
@@ -347,6 +350,9 @@ function LocalBookCover({ book, imageUrls = [], index = 0, size = 'normal' }) {
 
   const hasImage = Boolean(src);
 
+  const { t } = useTranslation();
+  const coverTitle = book.titre || book.title || t('Sans titre');
+
   return (
     <div
       style={{
@@ -360,7 +366,7 @@ function LocalBookCover({ book, imageUrls = [], index = 0, size = 'normal' }) {
       {hasImage ? (
         <img
           src={src}
-          alt={`Couverture de ${book.titre || book.title || 'livre'}`}
+          alt={t('Couverture de {{title}}', { title: coverTitle })}
           onError={() => {
             if (currentIndex + 1 < validUrls.length) {
               setCurrentIndex(currentIndex + 1);
@@ -393,16 +399,18 @@ export function BookCover({ book, index = 0, size = 'normal', isOnline = false }
 }
 
 export function BookCoverImage({ book, alt, className, style }) {
+  const { t } = useTranslation();
   const imageUrls = getBookCoverCandidates(book);
   const [currentIndex, setCurrentIndex] = useState(0);
   const src = imageUrls[currentIndex] || null;
+  const coverTitle = book.titre || book.title || t('Sans titre');
 
   if (!src) return null;
 
   return (
     <img
       src={src}
-      alt={alt || `Couverture de ${book.titre || book.title || 'livre'}`}
+      alt={alt || t('Couverture de {{title}}', { title: coverTitle })}
       className={className}
       style={style}
       onError={() => {

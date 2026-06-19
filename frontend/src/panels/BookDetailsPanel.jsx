@@ -314,23 +314,23 @@ export default function BookDetailsPanel({ book, onClose }) {
   const coverUrls  = getBookCoverCandidates(book);
 
   const detailItems = [
-    { label: 'Auteur',        value: book.auteur },
-    { label: 'Éditeur',       value: book.editeur },
-    { label: 'Année',         value: book.annee_publication },
-    { label: 'Édition',       value: book.edition },
-    { label: 'Langue',        value: book.langue },
-    { label: 'Pages',         value: book.nombre_pages },
-    { label: 'Genre',         value: book.genre },
-    { label: 'Type',          value: book.type_ouvrage },
-    { label: 'Emplacement',   value: book.emplacement },
-    { label: 'Thème',         value: book.theme },
-    { label: 'Disponibilité', value: disponible ? 'Disponible' : 'Indisponible' },
+    { label: t('Auteur'),        value: book.auteur },
+    { label: t('Éditeur'),       value: book.editeur },
+    { label: t('Année'),         value: book.annee_publication },
+    { label: t('Édition'),       value: book.edition },
+    { label: t('Langue'),        value: book.langue },
+    { label: t('Pages'),         value: book.nombre_pages },
+    { label: t('Genre'),         value: book.genre },
+    { label: t('Type'),          value: book.type_ouvrage },
+    { label: t('Emplacement'),   value: book.emplacement },
+    { label: t('Thème'),         value: book.theme },
+    { label: t('Disponibilité'), value: disponible ? t('Disponible') : t('Indisponible') },
   ];
  
   const isPeriodique = book.type_ouvrage === 'périodique';
   const modalTitle   = isPeriodique
-    ? "📰 Fiche détaillée du périodique"
-    : "📚 Fiche détaillée du livre";
+    ? `📰 ${t('Fiche détaillée du périodique')}`
+    : `📚 ${t('Fiche détaillée du livre')}`;
  
   return (
     <Modal title={modalTitle} onClose={onClose}>
@@ -358,7 +358,7 @@ export default function BookDetailsPanel({ book, onClose }) {
           {/* Colonne informations */}
           <div className="bd-info-col">
             <span className="bd-type-chip">
-              {isPeriodique ? "📰" : "📚"} {book.type_ouvrage || 'Livre'}
+              {isPeriodique ? "📰" : "📚"} {book.type_ouvrage ? t(book.type_ouvrage) : t('Livre')}
             </span>
  
             <h1 className="bd-title">{book.titre}</h1>
@@ -368,7 +368,7 @@ export default function BookDetailsPanel({ book, onClose }) {
                 <circle cx="12" cy="8" r="4"/>
                 <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
               </svg>
-              de <strong>{book.auteur || 'Auteur inconnu'}</strong>
+              de <strong>{book.auteur || t('Auteur inconnu')}</strong>
             </p>
  
             {book.amazon_rating && <Stars rating={book.amazon_rating}/>}
@@ -376,33 +376,33 @@ export default function BookDetailsPanel({ book, onClose }) {
             {/* Quick summary */}
             <div className="bd-quick-grid">
               <div className="bd-quick-item">
-                <span className="bd-quick-label">Code</span>
+                <span className="bd-quick-label">{t('Code')}</span>
                 <span className="bd-quick-val"
                   style={{fontFamily:"'Courier New',monospace",fontSize:'.78rem'}}>
                   {book.code}
                 </span>
               </div>
               <div className="bd-quick-item">
-                <span className="bd-quick-label">Exemplaires</span>
+                <span className="bd-quick-label">{t('Exemplaires')}</span>
                 <span className="bd-quick-val">
                   {book.exemplaires_disponibles}/{book.total_exemplaires}
                 </span>
               </div>
               {book.annee_publication && (
                 <div className="bd-quick-item">
-                  <span className="bd-quick-label">Année</span>
+                  <span className="bd-quick-label">{t('Année')}</span>
                   <span className="bd-quick-val">{book.annee_publication}</span>
                 </div>
               )}
               {book.langue && (
                 <div className="bd-quick-item">
-                  <span className="bd-quick-label">Langue</span>
+                  <span className="bd-quick-label">{t('Langue')}</span>
                   <span className="bd-quick-val">{book.langue}</span>
                 </div>
               )}
               {book.nombre_pages && (
                 <div className="bd-quick-item">
-                  <span className="bd-quick-label">Pages</span>
+                  <span className="bd-quick-label">{t('Pages')}</span>
                   <span className="bd-quick-val">{book.nombre_pages}</span>
                 </div>
               )}
@@ -428,16 +428,16 @@ export default function BookDetailsPanel({ book, onClose }) {
             <div className="bd-exemplaires-display">
               <div className="ex-num">{book.exemplaires_disponibles}</div>
               <div className="ex-label">
-                sur {book.total_exemplaires} disponible{book.exemplaires_disponibles > 1 ? 's' : ''}
+                {t('sur')} {book.total_exemplaires} {t('Disponibles')}
               </div>
             </div>
  
             {book.gratuit && (
-              <div className="bd-free-badge">🎁 Accès gratuit</div>
+              <div className="bd-free-badge">🎁 {t('Accès gratuit')}</div>
             )}
  
             <div className="bd-action-note">
-              📍 Rendez-vous à la bibliothèque pour effectuer un emprunt ou une consultation.
+              {t('Rendez-vous à la bibliothèque pour effectuer un emprunt ou une consultation.')}
             </div>
           </div>
         </section>
@@ -447,7 +447,7 @@ export default function BookDetailsPanel({ book, onClose }) {
  
           {/* Description / Résumé */}
           <div className="bd-desc-card">
-            <h2 className="bd-section-title">📖 À propos de ce livre</h2>
+            <h2 className="bd-section-title">📖 {t('À propos de ce livre')}</h2>
  
             {book.resume && (
               <div className="bd-resume-block">
@@ -456,13 +456,13 @@ export default function BookDetailsPanel({ book, onClose }) {
             )}
  
             <p className="bd-desc-text">
-              {book.description || "Aucune description disponible pour cet ouvrage."}
+              {book.description || t('Aucune description disponible pour cet ouvrage.')}
             </p>
           </div>
  
           {/* Fiche technique */}
           <div className="bd-spec-card">
-            <h2 className="bd-section-title">🔍 Détails</h2>
+            <h2 className="bd-section-title">🔍 {t('Détails')}</h2>
             <div className="bd-spec-list">
               {detailItems.map(item => item.value ? (
                 <div key={item.label} className="bd-spec-row">
@@ -477,7 +477,7 @@ export default function BookDetailsPanel({ book, onClose }) {
         {/* ════ AVIS ════ */}
         {book.amazon_reviews && (
           <div className="bd-reviews-card">
-            <h2 className="bd-section-title">💬 Avis et commentaires</h2>
+            <h2 className="bd-section-title">💬 {t('Avis et commentaires')}</h2>
             <div className="bd-review-body">
               {book.amazon_reviews.split('\n').map((line, i) =>
                 line.trim()
@@ -491,7 +491,7 @@ export default function BookDetailsPanel({ book, onClose }) {
         {/* ════ FOOTER ════ */}
         <div className="bd-footer">
           <button className="bd-btn-close" onClick={onClose}>
-            ✕ Fermer
+            ✕ {t('Fermer')}
           </button>
         </div>
  
