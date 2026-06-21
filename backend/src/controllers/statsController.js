@@ -13,7 +13,8 @@ const summary = async (req, res) => {
     const loanWhere = {};
     const consultWhere = {};
 
-    console.log('[stats.summary] query', { start, end, params: req.query });
+    // Avoid printing query parameters which may contain sensitive filters
+    console.info('[stats.summary] query parameters received');
 
     if (start && end) {
       loanWhere.date_emprunt = { [Op.between]: [new Date(start), new Date(end)] };

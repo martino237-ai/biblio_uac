@@ -314,7 +314,7 @@ export default function ReaderDetailsPanel({ reader, onClose }) {
               <th>Retour effectif</th>
               <th>Durée</th>
               <th>Statut</th>
-              <th>Pénalité</th>
+              <th>Type</th>
             </tr>
           </thead>
           <tbody>
@@ -325,17 +325,25 @@ export default function ReaderDetailsPanel({ reader, onClose }) {
               const duree    = rendu
                 ? daysBetween(e.date_emprunt, e.date_retour_effective)
                 : daysBetween(e.date_emprunt, new Date());
- 
+
               let badge, bCls;
               if (rendu)          { badge = '✅ Retourné'; bCls = 'bd-ok'; }
               else if (enRetard)  { badge = '🔴 En retard'; bCls = 'bd-danger'; }
               else                { badge = '🟡 En cours'; bCls = 'bd-warn'; }
- 
+
+              const bookTitle = e.Book?.titre || e.titre || '—';
+              const bookCode  = e.Book?.code || e.code || '—';
+              const typeLabel = e.type_emprunt === 'prolonge'
+                ? 'Prolongé'
+                : e.type_emprunt === 'limite'
+                  ? 'Limite'
+                  : 'Normal';
+
               return (
                 <tr key={e.id ?? i}>
-                  <td><strong>{e.titre || e.book?.titre || '—'}</strong></td>
+                  <td><strong>{bookTitle}</strong></td>
                   <td style={{fontFamily:"'Courier New',monospace", fontSize:'.72rem', color:'var(--rd-primary)'}}>
-                    {e.code || e.book?.code || '—'}
+                    {bookCode}
                   </td>
                   <td>{fmt(e.date_emprunt)}</td>
                   <td style={{color: enRetard ? 'var(--rd-danger)' : 'inherit'}}>
@@ -344,11 +352,7 @@ export default function ReaderDetailsPanel({ reader, onClose }) {
                   <td>{rendu ? fmt(e.date_retour_effective) : <span style={{color:'var(--rd-text-3)'}}>—</span>}</td>
                   <td style={{fontWeight:600}}>{duree != null ? `${duree}j` : '—'}</td>
                   <td><span className={`rd-badge ${bCls}`}><span className="bd-dot"/>{badge.replace(/^[^ ]+ /,'')}</span></td>
-                  <td>
-                    {e.penalite
-                      ? <span className="rd-penalty">{e.penalite} FCFA</span>
-                      : <span style={{color:'var(--rd-text-3)'}}>—</span>}
-                  </td>
+                  <td>{typeLabel}{e.prolongations ? ` (${e.prolongations})` : ''}</td>
                 </tr>
               );
             })}
@@ -386,19 +390,30 @@ export default function ReaderDetailsPanel({ reader, onClose }) {
             </tr>
           </thead>
           <tbody>
-            {consultations.map((c, i) => (
-              <tr key={c.id ?? i}>
-                <td><strong>{c.titre || c.book?.titre || '—'}</strong></td>
-                <td style={{fontFamily:"'Courier New',monospace", fontSize:'.72rem', color:'var(--rd-primary)'}}>
-                  {c.code || c.book?.code || '—'}
-                </td>
-                <td>{fmtFull(c.date_consultation || c.created_at)}</td>
-                <td style={{fontWeight:600}}>{c.duree_minutes ?? '—'}</td>
-                <td style={{color:'var(--rd-text-3)', fontSize:'.78rem'}}>
-                  {c.notes || '—'}
-                </td>
-              </tr>
-            ))}
+            {consultations.map((c, i) => {
+              const bookTitle = c.Book?.titre || c.titre || '—';
+              const bookCode  = c.Book?.code || c.code || '—';
+              const startDate = c.heure_debut || c.date_debut || c.createdAt;
+              const endDate   = c.heure_fin || c.date_fin;
+              const duration  = endDate && startDate
+                ? Math.max(0, Math.round((new Date(endDate) - new Date(startDate)) / 60000))
+                : '—';
+              const noteText  = c.note || c.notes || '—';
+
+              return (
+                <tr key={c.id ?? i}>
+                  <td><strong>{bookTitle}</strong></td>
+                  <td style={{fontFamily:"'Courier New',monospace", fontSize:'.72rem', color:'var(--rd-primary)'}}>
+                    {bookCode}
+                  </td>
+                  <td>{fmtFull(startDate)}</td>
+                  <td style={{fontWeight:600}}>{duration}</td>
+                  <td style={{color:'var(--rd-text-3)', fontSize:'.78rem'}}>
+                    {noteText}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

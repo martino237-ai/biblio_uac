@@ -2,8 +2,9 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
 import BookDetailsPanel from '../panels/BookDetailsPanel';
+import BooksPanel from '../panels/BooksPanel';
 import SettingsPanel from '../panels/SettingsPanel';
-import { GenericBookCover, OnlineBookCover, getBookCoverCandidates } from '../components/BookCover';
+import { GenericBookCover, OnlineBookCover } from '../components/BookCover';
  
 /* ═══════════════════════════════════════════════════════════
    STYLES
@@ -32,26 +33,23 @@ const CSS = `
   --bk-transition: .2s cubic-bezier(.4,0,.2,1);
 }
 
-/* DARK MODE - overrides when <html> has class 'dark' */
+/* Mode sombre */
 .dark {
-  --bk-primary:    #60a5fa;
-  --bk-primary-dk: #3b82f6;
-  --bk-primary-lt: rgba(96,165,250,0.08);
-  --bk-success:    #34d399;
-  --bk-success-lt: rgba(16,185,129,0.06);
-  --bk-danger:     #fb7185;
-  --bk-danger-lt:  rgba(251,113,133,0.06);
+  --bk-primary:    #3b82f6;
+  --bk-primary-dk: #2563eb;
+  --bk-primary-lt: #1e3a8a;
+  --bk-success:    #10b981;
+  --bk-success-lt: #064e3b;
+  --bk-danger:     #ef4444;
+  --bk-danger-lt:  #7f1d1d;
   --bk-purple:     #a78bfa;
-  --bk-purple-lt:  rgba(167,139,250,0.06);
-  --bk-text:       #e6eef8;
-  --bk-text-2:     #c7d2da;
+  --bk-purple-lt:  #4c1d95;
+  --bk-text:       #f1f5f9;
+  --bk-text-2:     #cbd5e1;
   --bk-text-3:     #94a3b8;
-  --bk-border:     #1f2937;
-  --bk-surface:    #071029;
-  --bk-bg:         #041025;
-  --bk-radius:     14px;
-  --bk-radius-sm:  9px;
-  --bk-transition: .2s cubic-bezier(.4,0,.2,1);
+  --bk-border:     #334155;
+  --bk-surface:    #1e293b;
+  --bk-bg:         #0f172a;
 }
  
 /* ── LAYOUT ── */
@@ -208,7 +206,66 @@ const CSS = `
 .bk-stat-l { font-size: .72rem; color: var(--bk-text-3); font-weight: 500; margin-top: 3px; }
 .bk-stat.ok   .bk-stat-n { color: var(--bk-success); }
 .bk-stat.bad  .bk-stat-n { color: var(--bk-danger); }
- 
+
+.bk-history-card {
+  background: var(--bk-surface);
+  border: 1px solid var(--bk-border);
+  border-radius: var(--bk-radius-sm);
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+.bk-history-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+}
+.bk-history-table th,
+.bk-history-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--bk-border);
+  text-align: left;
+  vertical-align: middle;
+  font-size: .85rem;
+}
+.bk-history-table th {
+  color: var(--bk-text-3);
+  font-weight: 700;
+}
+.bk-history-table tbody tr:hover {
+  background: #f8fafc;
+}
+.dark .bk-history-table tbody tr:hover {
+  background: #334155;
+}
+.bk-history-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: .75rem;
+  font-weight: 700;
+}
+.bk-history-badge.ok { background: #ecfdf5; color: #166534; }
+.bk-history-badge.warn { background: #fef3c7; color: #986b0d; }
+.bk-history-badge.danger { background: #fee2e2; color: #b91c1c; }
+.dark .bk-history-badge.ok { background: #064e3b; color: #86efac; }
+.dark .bk-history-badge.warn { background: #713f12; color: #fbbf24; }
+.dark .bk-history-badge.danger { background: #7f1d1d; color: #fca5a5; }
+.bk-history-card-title {
+  font-size: .95rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.bk-history-empty {
+  padding: 28px 20px;
+  background: var(--bk-surface);
+  border: 1px solid var(--bk-border);
+  border-radius: var(--bk-radius-sm);
+  text-align: center;
+  color: var(--bk-text-3);
+}
+
 /* ══════════════════════════════
    FILTRES CATÉGORIES
 ══════════════════════════════ */
@@ -227,6 +284,8 @@ const CSS = `
   background: var(--bk-primary-lt); color: var(--bk-primary);
   border-color: #93c5fd; font-weight: 600;
 }
+.dark .bk-cat:hover { border-color: #3b82f6; }
+.dark .bk-cat.active { border-color: #3b82f6; }
  
 /* ══════════════════════════════
    GRILLE LIVRES
@@ -237,10 +296,9 @@ const CSS = `
 }
 .bk-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(220px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 16px;
   margin-bottom: 24px;
-  align-items: start;
 }
  
 /* ── CARTE LIVRE ── */
@@ -332,6 +390,9 @@ const CSS = `
   padding: 3px 8px; border-radius: 5px; backdrop-filter: blur(4px);
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
+.dark .bk-code-tag {
+  background: rgba(241,245,249,.85); color: #0f172a;
+}
  
 /* ── corps carte ── */
 .bk-body { padding: 11px 13px 10px; flex: 1; display: flex; flex-direction: column; gap: 5px; }
@@ -356,6 +417,7 @@ const CSS = `
 .bk-card-meta {
   display: flex; align-items: center; gap: 8px;
   font-size: .7rem; color: var(--bk-text-3);
+  flex-wrap: wrap;
 }
 .bk-card-exemplaires {
   display: flex; align-items: center; justify-content: space-between;
@@ -364,6 +426,77 @@ const CSS = `
 }
 .bk-card-ex-label { font-size: .68rem; color: var(--bk-text-2); font-weight: 500; }
 .bk-card-ex-val   { font-size: .75rem; font-weight: 700; color: var(--bk-text); }
+.bk-card-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 2px;
+}
+.bk-card-info {
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid var(--bk-border);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+.bk-card-info-label {
+  display: block;
+  color: var(--bk-text-3);
+  font-size: .6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.bk-card-info-value {
+  display: block;
+  color: var(--bk-text-2);
+  font-size: .7rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bk-card-summary {
+  color: var(--bk-text-2);
+  font-size: .7rem;
+  line-height: 1.45;
+  margin: 2px 0 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.bk-card-status {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+.bk-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: .66rem;
+  font-weight: 700;
+  border: 1px solid var(--bk-border);
+}
+.bk-status-pill.ok {
+  background: #ecfdf5;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+.bk-status-pill.warn {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fde68a;
+}
+.bk-status-pill.bad {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
  
 /* ── action ── */
 .bk-card-footer {
@@ -447,7 +580,7 @@ const CSS = `
   .bk-brand-sub { font-size: .6rem; }
   
   .bk-nav-section {
-    display: block;
+    display: none;
   }
   
   .bk-nav-item {
@@ -457,14 +590,7 @@ const CSS = `
   }
   
   .bk-sidebar-bottom {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    border-top: none;
-    width: 100%;
-    box-sizing: border-box;
-    justify-content: flex-start;
+    display: none;
   }
   
   .bk-main { flex: 1; }
@@ -528,40 +654,36 @@ const CSS = `
   }
   
   .bk-cover-local {
-    height: 180px;
+    height: 140px;
   }
   
   .bk-cover-online {
-    height: 180px;
-  }
-  
-  .bk-card {
-    min-height: 420px;
+    height: 140px;
   }
   
   .bk-card-title {
-    font-size: .82rem;
-  }
-  
-  .bk-card-author {
-    font-size: .72rem;
-  }
-  
-  .bk-card-meta {
-    font-size: .7rem;
-  }
-  
-  .bk-card-ex-label {
-    font-size: .68rem;
-  }
-  
-  .bk-card-ex-val {
     font-size: .75rem;
   }
   
+  .bk-card-author {
+    font-size: .65rem;
+  }
+  
+  .bk-card-meta {
+    font-size: .6rem;
+  }
+  
+  .bk-card-ex-label {
+    font-size: .6rem;
+  }
+  
+  .bk-card-ex-val {
+    font-size: .65rem;
+  }
+  
   .bk-btn-details, .bk-btn-online {
-    font-size: .78rem;
-    padding: 8px;
+    font-size: .7rem;
+    padding: 6px;
   }
   
   .bk-cover-ph-title {
@@ -853,17 +975,311 @@ const CSS = `
   }
 }
 
-/* Modal Paramètres */
-.bk-settings-modal {
-  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
-  background: rgba(0,0,0,0.35); z-index: 1200;
+/* Design refresh lecteur */
+html.dark .bk-layout,
+.bk-layout.dark {
+  --bk-primary: #60a5fa;
+  --bk-primary-dk: #3b82f6;
+  --bk-primary-lt: rgba(96,165,250,.16);
+  --bk-success: #34d399;
+  --bk-success-lt: rgba(52,211,153,.14);
+  --bk-danger: #fb7185;
+  --bk-danger-lt: rgba(251,113,133,.14);
+  --bk-purple: #c084fc;
+  --bk-purple-lt: rgba(192,132,252,.16);
+  --bk-text: #f8fafc;
+  --bk-text-2: #cbd5e1;
+  --bk-text-3: #94a3b8;
+  --bk-border: rgba(148,163,184,.24);
+  --bk-surface: #111827;
+  --bk-bg: #020617;
 }
-.bk-modal-content {
-  background: var(--bk-surface); padding: 16px; border-radius: 12px; width: min(640px, 95%);
-  box-shadow: 0 8px 32px rgba(2,6,23,0.25); border: 1px solid var(--bk-border);
+
+.bk-layout {
+  background:
+    radial-gradient(circle at top left, rgba(37,99,235,.08), transparent 30%),
+    linear-gradient(135deg, #eef4ff 0%, #f8fafc 46%, #f6f2ff 100%);
 }
-.bk-modal-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
-.bk-close-btn { background:none; border:none; font-size:1.05rem; cursor:pointer; }
+html.dark .bk-layout,
+.bk-layout.dark {
+  background:
+    radial-gradient(circle at top left, rgba(96,165,250,.16), transparent 32%),
+    linear-gradient(135deg, #020617 0%, #0f172a 52%, #111827 100%);
+}
+
+.bk-sidebar {
+  width: 248px;
+  background: linear-gradient(180deg, #07163c 0%, #0f2060 54%, #101827 100%);
+  border-right: 1px solid rgba(255,255,255,.08);
+  box-shadow: 8px 0 28px rgba(15,23,42,.18);
+  color: rgba(255,255,255,.72);
+}
+.bk-brand {
+  padding: 20px 18px;
+  border-bottom-color: rgba(255,255,255,.08);
+}
+.bk-brand-icon {
+  background: rgba(251,191,36,.16);
+  border: 1px solid rgba(251,191,36,.28);
+  color: #fbbf24;
+}
+.bk-brand-name { color: #fff; }
+.bk-brand-sub { color: rgba(255,255,255,.55); }
+.bk-nav-section {
+  color: rgba(255,255,255,.34);
+  letter-spacing: .08em;
+  padding-top: 18px;
+}
+.bk-nav-item {
+  color: rgba(255,255,255,.68);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 3px 10px;
+  width: calc(100% - 20px);
+  gap: 11px;
+}
+.bk-nav-item:hover {
+  background: rgba(255,255,255,.07);
+  color: #fff;
+}
+.bk-nav-item.active {
+  background: rgba(251,191,36,.14);
+  color: #fbbf24;
+  box-shadow: inset 3px 0 0 #fbbf24;
+}
+.bk-nav-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.07);
+}
+.bk-nav-item.active .bk-nav-icon { background: rgba(251,191,36,.18); }
+.bk-nav-badge {
+  background: rgba(96,165,250,.18);
+  border: 1px solid rgba(96,165,250,.24);
+  color: #bfdbfe;
+}
+.bk-nav-danger:hover {
+  background: rgba(239,68,68,.14);
+  color: #fecaca;
+}
+.bk-sidebar-bottom {
+  border-top-color: rgba(255,255,255,.08);
+  padding: 14px;
+}
+.bk-user-row {
+  background: rgba(255,255,255,.06);
+  cursor: default;
+}
+.bk-user-row:hover { background: rgba(255,255,255,.09); }
+.bk-avatar-sm {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #172554;
+}
+.bk-user-name { color: #fff; }
+.bk-user-role { color: rgba(255,255,255,.5); }
+
+.bk-main { min-height: 100vh; }
+.bk-topbar {
+  background: rgba(255,255,255,.84);
+  backdrop-filter: blur(14px);
+  border-bottom-color: rgba(148,163,184,.28);
+  padding: 16px 24px;
+  box-shadow: 0 8px 24px rgba(15,23,42,.05);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+    flex-wrap: wrap;
+  }
+html.dark .bk-topbar,
+.dark .bk-topbar {
+  background: rgba(15,23,42,.82);
+  box-shadow: 0 8px 24px rgba(0,0,0,.28);
+}
+.bk-topbar h1 {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin: 0;
+  order: 2;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.bk-search-box {
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15,23,42,.04);
+  order: 3;
+  flex: 1 1 100%;
+}
+html.dark .bk-search-box,
+.dark .bk-search-box {
+  background: rgba(15,23,42,.78);
+}
+.bk-search-box input { min-height: 24px; }
+
+.bk-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.35rem;
+  color: var(--bk-text);
+  cursor: pointer;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  transition: background .2s ease;
+  order: 1;
+  max-width: 1240px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 26px;
+}
+
+.bk-stats {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+.bk-stat {
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 8px 24px rgba(15,23,42,.07);
+}
+html.dark .bk-stat,
+.dark .bk-stat {
+  box-shadow: 0 10px 28px rgba(0,0,0,.24);
+}
+.bk-stat-n { font-size: 1.9rem; }
+
+.bk-card,
+.bk-history-card,
+.bk-history-empty,
+.bk-empty {
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(15,23,42,.07);
+}
+html.dark .bk-card,
+html.dark .bk-history-card,
+html.dark .bk-history-empty,
+html.dark .bk-empty,
+.dark .bk-card,
+.dark .bk-history-card,
+.dark .bk-history-empty,
+.dark .bk-empty {
+  box-shadow: 0 12px 30px rgba(0,0,0,.28);
+}
+.bk-card-footer,
+.bk-card-exemplaires {
+  background: #f8fafc;
+}
+html.dark .bk-card-footer,
+html.dark .bk-card-exemplaires,
+.dark .bk-card-footer,
+.dark .bk-card-exemplaires {
+  background: rgba(15,23,42,.72);
+}
+.bk-history-card-title {
+  padding: 16px 18px 4px;
+  margin: 0;
+  color: var(--bk-text);
+}
+.bk-history-table th {
+  background: #f8fafc;
+}
+html.dark .bk-history-table th,
+.dark .bk-history-table th {
+  background: rgba(15,23,42,.72);
+}
+.bk-cat {
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(15,23,42,.04);
+}
+.bk-btn-details,
+.bk-btn-online {
+  border-radius: 9px;
+}
+.bk-settings-page {
+  background: var(--bk-surface);
+  border: 1px solid var(--bk-border);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 10px 28px rgba(15,23,42,.07);
+}
+html.dark .bk-settings-page,
+.dark .bk-settings-page {
+  box-shadow: 0 12px 30px rgba(0,0,0,.28);
+}
+
+@media (max-width: 768px) {
+  .bk-layout { flex-direction: column; }
+
+  .bk-hamburger { display: inline-flex; }
+
+  .bk-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 82%;
+    max-width: 320px;
+    transform: translateX(-110%);
+    z-index: 30;
+    box-shadow: 12px 0 34px rgba(0,0,0,.18);
+    overflow-y: auto;
+    border-right: none;
+    background: var(--bk-surface);
+    height: 100vh;
+  }
+
+  .bk-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .bk-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,.45);
+    z-index: 25;
+  }
+
+  .bk-brand {
+    padding: 14px 16px;
+  }
+
+  .bk-nav-section {
+    display: none;
+  }
+
+  .bk-nav-item {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+  }
+
+  .bk-sidebar-bottom {
+    display: none;
+  }
+
+  .bk-main {
+    position: relative;
+    z-index: 1;
+  }
+
+  .bk-topbar {
+    padding: 14px 16px;
+  }
+
+  .bk-search-box {
+    width: 100%;
+  }
+
+  .bk-content { padding: 16px; }
+}
 `;
  
 function injectCSS(id, css) {
@@ -879,6 +1295,14 @@ function initials(user) {
   const n = (user.prenom || user.nom || user.username || '');
   return n.slice(0,2).toUpperCase() || '?';
 }
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('fr-FR');
+}
+function formatDateTime(dateStr) {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleString('fr-FR');
+}
  
 /* ══════════════════════════════
    COMPOSANT COUVERTURE LOCALE
@@ -887,57 +1311,70 @@ function initials(user) {
    CARTE LIVRE LOCAL
 ══════════════════════════════ */
 function LocalBookCard({ book, idx, onDetailsClick }) {
-  const { t } = useTranslation();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const imageUrls = getBookCoverCandidates(book);
-  const imageUrl = imageUrls[currentIndex] || null;
-  const hasImage = Boolean(imageUrl);
-  const available = (book.exemplaires_disponibles ?? 0) > 0;
+  const available = Number(book.exemplaires_disponibles ?? 0);
+  const total = Number(book.total_exemplaires ?? 0);
+  const isAvailable = available > 0;
+  const summary = book.resume || book.description || '';
+  const etat = book.etat || (isAvailable ? 'disponible' : 'indisponible');
 
   return (
     <div className="bk-card" onClick={() => onDetailsClick(book)}>
-      {hasImage ? (
-        <div className="bk-cover-local">
-          <img
-            className="bk-cover-local-img"
-            src={imageUrl}
-            alt={t('Couverture de {{title}}', { title: book.titre || book.title || t('Sans titre') })}
-            onError={() => {
-              if (currentIndex + 1 < imageUrls.length) {
-                setCurrentIndex(currentIndex + 1);
-              }
-            }}
-          />
-          <span className={`bk-badge-dispo ${available ? 'ok' : 'no'}`}>
-            <span className="bk-badge-dot" />
-            {available ? t('Disponible') : t('Indisponible')}
-          </span>
-          {book.code && <span className="bk-code-tag">{book.code}</span>}
-        </div>
-      ) : (
-        <GenericBookCover book={book} index={idx} size="normal" />
-      )}
+      <GenericBookCover book={book} index={idx} size="normal" />
       <div className="bk-body">
         {(book.genre || book.theme) && (
           <span className="bk-card-genre">🏷 {book.genre || book.theme}</span>
         )}
         <p className="bk-card-title">{book.titre}</p>
         <p className="bk-card-author">
-          {book.auteur || <em style={{color:'#94a3b8'}}>{t('Auteur inconnu')}</em>}
+          {book.auteur || <em style={{color:'#94a3b8'}}>Auteur inconnu</em>}
         </p>
         <div className="bk-card-meta">
+          {book.code               && <span>Code: {book.code}</span>}
           {book.annee_publication && <span>📅 {book.annee_publication}</span>}
           {book.emplacement        && <span>📍 {book.emplacement}</span>}
+          {book.langue             && <span>Langue: {book.langue}</span>}
+          {book.nombre_pages       && <span>{book.nombre_pages} p.</span>}
         </div>
+
+        <div className="bk-card-info-grid">
+          <span className="bk-card-info">
+            <span className="bk-card-info-label">Editeur</span>
+            <span className="bk-card-info-value">{book.editeur || 'Non renseigne'}</span>
+          </span>
+          <span className="bk-card-info">
+            <span className="bk-card-info-label">Type</span>
+            <span className="bk-card-info-value">{book.type_ouvrage || 'Livre'}</span>
+          </span>
+        </div>
+
+        <div className="bk-card-status">
+          <span className={`bk-status-pill ${isAvailable ? 'ok' : 'bad'}`}>
+            {isAvailable ? 'Disponible' : 'Indisponible'}
+          </span>
+          <span className={`bk-status-pill ${etat === 'disponible' ? 'ok' : 'warn'}`}>
+            {etat}
+          </span>
+        </div>
+
+        {summary && <p className="bk-card-summary">{summary}</p>}
+
         <div className="bk-card-exemplaires">
-          <span className="bk-card-ex-label">📦 {t('Exemplaires')}</span>
+          <span className="bk-card-ex-label">📦 Exemplaires</span>
           <span className="bk-card-ex-val">
-            {book.exemplaires_disponibles}/{book.total_exemplaires}
+            {available}/{total}
           </span>
         </div>
       </div>
       <div className="bk-card-footer">
-        <button className="bk-btn-details" onClick={() => onDetailsClick(book)}>👁 {t('Voir les détails')}</button>
+        <button
+          className="bk-btn-details"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDetailsClick(book);
+          }}
+        >
+          Lire les détails
+        </button>
       </div>
     </div>
   );
@@ -947,8 +1384,7 @@ function LocalBookCard({ book, idx, onDetailsClick }) {
    CARTE LIVRE EN LIGNE
 ══════════════════════════════ */
 function OnlineBookCard({ book }) {
-  const { t } = useTranslation();
-  const authors  = book.author_name ? book.author_name.slice(0,2).join(', ') : t('Auteur inconnu');
+  const authors  = book.author_name ? book.author_name.slice(0,2).join(', ') : 'Auteur inconnu';
   const subjects = book.subject     ? book.subject.slice(0,2).join(' · ')    : '';
   const olKey    = book.key         ? `https://openlibrary.org${book.key}`   : '#';
  
@@ -981,8 +1417,8 @@ function OnlineBookCard({ book }) {
           href={olKey}
           target="_blank"
           rel="noopener noreferrer"
-          >
-          🌐 {t('Lire sur OpenLibrary')}
+        >
+          🌐 Lire sur OpenLibrary
         </a>
       </div>
     </div>
@@ -993,21 +1429,21 @@ function OnlineBookCard({ book }) {
    COMPOSANT PRINCIPAL
 ══════════════════════════════ */
 const CATEGORIES = [
-  { key:'informatique', emoji:'💻', labelKey:'Informatique' },
-  { key:'sante',        emoji:'🏥', labelKey:'Santé' },
-  { key:'droit',        emoji:'⚖️', labelKey:'Droit' },
-  { key:'education',    emoji:'🎓', labelKey:'Éducation' },
-  { key:'roman',        emoji:'📖', labelKey:'Roman' },
-  { key:'science',      emoji:'🔬', labelKey:'Science' },
-  { key:'histoire',     emoji:'🏛', labelKey:'Histoire' },
-  { key:'philosophie',  emoji:'💡', labelKey:'Philosophie' },
+  { key:'informatique', label:'💻 Informatique' },
+  { key:'sante',        label:'🏥 Santé' },
+  { key:'droit',        label:'⚖️ Droit' },
+  { key:'education',    label:'🎓 Éducation' },
+  { key:'roman',        label:'📖 Roman' },
+  { key:'science',      label:'🔬 Science' },
+  { key:'histoire',     label:'🏛 Histoire' },
+  { key:'philosophie',  label:'💡 Philosophie' },
 ];
  
 export default function Books() {
   const { t } = useTranslation();
  
   /* ── State ── */
-  const [page,          setPage]          = useState('local');   // 'local' | 'online'
+  const [page,          setPage]          = useState('local');   // 'local' | 'online' | 'history' | 'settings'
   const [localBooks,    setLocalBooks]    = useState([]);
   const [onlineBooks,   setOnlineBooks]   = useState([]);
   const [query,         setQuery]         = useState('');
@@ -1016,7 +1452,21 @@ export default function Books() {
   const [onlineLoading, setOnlineLoading] = useState(false);
   const [user,          setUser]          = useState(null);
   const [selectedBook,  setSelectedBook]  = useState(null);
-  const [showSettings,  setShowSettings]  = useState(false);
+  const [readerProfile, setReaderProfile] = useState(null);
+  const [readerLoans,   setReaderLoans]   = useState([]);
+  const [readerConsultations, setReaderConsultations] = useState([]);
+  const [readerLoading, setReaderLoading] = useState(false);
+  const [readerError,   setReaderError]   = useState('');
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [theme,         setTheme]         = useState('light');
+  const [sidebarOpen,   setSidebarOpen]   = useState(false);
+
+  const toggleSidebar = () => setSidebarOpen(open => !open);
+  const closeSidebar = () => setSidebarOpen(false);
+  const handlePageChange = (target) => {
+    setPage(target);
+    setSidebarOpen(false);
+  };
  
   injectCSS('bk-css', CSS);
  
@@ -1025,7 +1475,74 @@ export default function Books() {
     const u = JSON.parse(localStorage.getItem('user') || 'null');
     setUser(u);
     fetchLocal('');
+    
+    // Charger le thème au démarrage
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+    applyTheme(savedTheme);
   }, []);
+
+  /* ── Gérer les changements de thème ── */
+  useEffect(() => {
+    const handleThemeChange = (e) => {
+      const newTheme = e.detail?.theme || 'light';
+      setTheme(newTheme);
+      applyTheme(newTheme);
+    };
+
+    window.addEventListener('app-theme-change', handleThemeChange);
+    return () => window.removeEventListener('app-theme-change', handleThemeChange);
+  }, []);
+
+  function applyTheme(themeMode) {
+    const html = document.documentElement;
+    const layout = document.querySelector('.bk-layout');
+    if (themeMode === 'dark') html.classList.add('dark');
+    else html.classList.remove('dark');
+
+    if (layout) {
+      if (themeMode === 'dark') {
+        layout.classList.add('dark');
+      } else {
+        layout.classList.remove('dark');
+      }
+    }
+  }
+ 
+  const loadReaderHistory = useCallback(async () => {
+    if (!user) return;
+    setReaderLoading(true);
+    setReaderError('');
+
+    try {
+      const profileRes = await api.get('/readers/me');
+      const profile = profileRes.data;
+      setReaderProfile(profile || null);
+
+      if (!profile?.id) {
+        setReaderError('Impossible de localiser votre fiche lecteur.');
+        return;
+      }
+
+      const [loansRes, consultationsRes] = await Promise.all([
+        api.get(`/readers/${profile.id}/loans`).catch(() => ({ data: [] })),
+        api.get(`/readers/${profile.id}/consultations`).catch(() => ({ data: [] }))
+      ]);
+
+      setReaderLoans(loansRes.data || []);
+      setReaderConsultations(consultationsRes.data || []);
+    } catch (err) {
+      setReaderError(err?.response?.data?.error || err?.response?.data?.message || err.message || 'Impossible de charger votre historique');
+    } finally {
+      setReaderLoading(false);
+      setHistoryLoaded(true);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (!user || page !== 'history' || historyLoaded) return;
+    loadReaderHistory();
+  }, [user, page, historyLoaded, loadReaderHistory]);
  
   /* ── Livres locaux ── */
   async function fetchLocal(q) {
@@ -1062,6 +1579,7 @@ export default function Books() {
   /* ── Passage en mode en ligne ── */
   function goOnline() {
     setPage('online');
+    setSidebarOpen(false);
     if (onlineBooks.length === 0) fetchOnline(category);
   }
  
@@ -1086,12 +1604,12 @@ export default function Books() {
     <div className="bk-layout">
  
       {/* ══ SIDEBAR ══ */}
-      <aside className="bk-sidebar">
+      <aside className={`bk-sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="bk-brand">
           <div className="bk-brand-icon">📚</div>
           <div>
             <div className="bk-brand-name">Biblio UAC</div>
-            <div className="bk-brand-sub">{t('Espace lecteur')}</div>
+            <div className="bk-brand-sub">Espace lecteur</div>
           </div>
         </div>
  
@@ -1099,7 +1617,7 @@ export default function Books() {
  
         <button
           className={`bk-nav-item${page === 'local' ? ' active' : ''}`}
-          onClick={() => setPage('local')}
+          onClick={() => handlePageChange('local')}
         >
           <span className="bk-nav-icon">📚</span>
           {t('Livres locaux')}
@@ -1113,15 +1631,29 @@ export default function Books() {
           <span className="bk-nav-icon">🌐</span>
           {t('Livres en ligne')}
         </button>
+        <button
+          className={`bk-nav-item${page === 'history' ? ' active' : ''}`}
+          onClick={() => handlePageChange('history')}
+        >
+          <span className="bk-nav-icon">🕑</span>
+          {t('Mon historique')}
+        </button>
+ 
+        <div className="bk-nav-section">{t('Compte')}</div>
 
         <button
-          className={`bk-nav-item`}
-          onClick={() => setShowSettings(true)}
+          className={`bk-nav-item${page === 'settings' ? ' active' : ''}`}
+          onClick={() => handlePageChange('settings')}
         >
           <span className="bk-nav-icon">⚙️</span>
           {t('Paramètres')}
         </button>
- 
+
+        <button className="bk-nav-item bk-nav-danger" onClick={logout}>
+          <span className="bk-nav-icon">↪</span>
+          {t('Déconnexion')}
+        </button>
+
         <div className="bk-sidebar-bottom">
           <div className="bk-user-row">
             <div className="bk-avatar-sm">{initials(user)}</div>
@@ -1130,95 +1662,182 @@ export default function Books() {
               <div className="bk-user-role">{t('Lecteur')}</div>
             </div>
           </div>
-          <button className="bk-logout-btn" onClick={logout}>
-            🚪 {t('Déconnexion')}
-          </button>
+          {/* Ancien raccourci de bas de menu remplace par les entrees Compte.
+          <div style={{display:'flex', gap:8, marginTop:10}}>
+            <button className="bk-logout-btn" onClick={() => setPage('settings')}>
+              ⚙️ {t('Paramètres')}
+            </button>
+            <button className="bk-logout-btn" onClick={logout}>
+              🚪 {t('Déconnexion')}
+            </button>
+          </div> */}
         </div>
       </aside>
  
       {/* ══ CONTENU PRINCIPAL ══ */}
+      {sidebarOpen && <div className="bk-backdrop" onClick={closeSidebar} />}
       <div className="bk-main">
  
         {/* Topbar */}
         <div className="bk-topbar">
+          <button className="bk-hamburger" onClick={toggleSidebar} type="button" aria-label="Menu">
+            ☰
+          </button>
           <h1>
-            {page === 'local'  && t('Catalogue des livres')}
+            {page === 'local'  && t('Catalogue des ouvrages')}
             {page === 'online' && t('Livres gratuits en ligne')}
+            {page === 'history' && t('Mon historique')}
+            {page === 'settings' && t('Paramètres')}
           </h1>
-          {page === 'local' && (
-            <form onSubmit={handleSearch} style={{display:'flex'}}>
-              <div className="bk-search-box">
-                <span className="bk-search-icon">🔍</span>
-                <input
-                  type="text"
-                  placeholder={t('Titre, auteur, code...')}
-                  value={query}
-                  onChange={e => setQuery(e.target.value)}
-                />
-              </div>
-            </form>
-          )}
-          {page === 'online' && (
-            <div className="bk-search-box" style={{opacity:.5,pointerEvents:'none'}}>
-              <span className="bk-search-icon">🔍</span>
-              <input type="text" placeholder={t('Filtrer par catégorie ci-dessous...')} readOnly/>
-            </div>
-          )}
         </div>
  
         <div className="bk-content">
  
           {/* ══ PAGE LIVRES LOCAUX ══ */}
-          {page === 'local' && (
+          {page === 'history' && (
             <>
-              {/* Stats */}
-              <div className="bk-stats">
-                <div className="bk-stat">
-                  <div className="bk-stat-n">{localBooks.length}</div>
-                  <div className="bk-stat-l">{t('ouvrages')}</div>
-                </div>
-                <div className="bk-stat ok">
-                  <div className="bk-stat-n">{totalDispos}</div>
-                  <div className="bk-stat-l">{t('disponibles')}</div>
-                </div>
-                <div className="bk-stat bad">
-                  <div className="bk-stat-n">{totalIndispos}</div>
-                  <div className="bk-stat-l">{t('indisponibles')}</div>
-                </div>
-              </div>
- 
-              {loading ? (
+              {readerLoading ? (
                 <div className="bk-loading">
                   <div className="bk-spinner"/>
-                  <p style={{margin:0, fontSize:'.85rem'}}>{t('Chargement...')}</p>
+                  <p style={{ margin: 0, fontSize: '.85rem' }}>{t('Chargement de votre historique...')}</p>
                 </div>
-              ) : localBooks.length === 0 ? (
+              ) : readerError ? (
                 <div className="bk-empty">
-                  <div className="bk-empty-icon">📭</div>
-                  <h3>{t('Aucun ouvrage trouvé')}</h3>
-                  <p>{t('Essayez une autre recherche ou consultez les livres en ligne')}</p>
-                  <button
-                    onClick={goOnline}
-                    style={{marginTop:'14px', padding:'9px 20px', border:'none',
-                      borderRadius:'10px', background:'#2563eb', color:'#fff',
-                      fontSize:'.85rem', fontWeight:600, cursor:'pointer', fontFamily:'Inter,sans-serif'}}
-                  >
-                    🌐 {t('Voir les livres en ligne')}
-                  </button>
+                  <div className="bk-empty-icon">⚠️</div>
+                  <h3>{t('Impossible de charger l’historique')}</h3>
+                  <p>{readerError}</p>
+                </div>
+              ) : !readerProfile ? (
+                <div className="bk-empty">
+                  <div className="bk-empty-icon">👤</div>
+                  <h3>{t('Aucune fiche lecteur trouvée')}</h3>
+                  <p>{t('Vérifiez que votre compte lecteur est correct ou contactez un bibliothécaire.')}</p>
                 </div>
               ) : (
                 <>
-                  <div className="bk-section-label">
-                    📋 {localBooks.length} {t('ouvrages dans la bibliothèque')}
+                  <div className="bk-stats">
+                    <div className="bk-stat">
+                      <div className="bk-stat-n">{readerLoans.length}</div>
+                      <div className="bk-stat-l">{t('Emprunts')}</div>
+                    </div>
+                    <div className="bk-stat ok">
+                      <div className="bk-stat-n">{readerLoans.filter(l => !l.date_retour_effective).length}</div>
+                      <div className="bk-stat-l">{t('En cours')}</div>
+                    </div>
+                    <div className="bk-stat bad">
+                      <div className="bk-stat-n">{readerLoans.filter(l => !l.date_retour_effective && l.date_retour_prevue && new Date(l.date_retour_prevue) < new Date()).length}</div>
+                      <div className="bk-stat-l">{t('En retard')}</div>
+                    </div>
+                    <div className="bk-stat">
+                      <div className="bk-stat-n">{readerConsultations.length}</div>
+                      <div className="bk-stat-l">{t('Consultations')}</div>
+                    </div>
                   </div>
-                  <div className="bk-grid">
-                    {localBooks.map((book, idx) => (
-                      <LocalBookCard key={book.id} book={book} idx={idx} onDetailsClick={setSelectedBook}/>
-                    ))}
+
+                  <div className="bk-history-card">
+                    <div className="bk-history-card-title">{t('Mes emprunts')}</div>
+                    {readerLoans.length === 0 ? (
+                      <div className="bk-history-empty">
+                        <p>{t('Vous n’avez aucun emprunt enregistré pour le moment.')}</p>
+                      </div>
+                    ) : (
+                      <table className="bk-history-table">
+                        <thead>
+                          <tr>
+                            <th>{t('Ouvrage')}</th>
+                            <th>{t('Code')}</th>
+                            <th>{t('Emprunt')}</th>
+                            <th>{t('Retour prévu')}</th>
+                            <th>{t('Statut')}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {readerLoans.map((loan) => {
+                            const bookTitle = loan.Book?.titre || loan.titre || '—';
+                            const bookCode = loan.Book?.code || loan.code || '—';
+                            const isLate = !loan.date_retour_effective && loan.date_retour_prevue && new Date(loan.date_retour_prevue) < new Date();
+                            const status = loan.date_retour_effective
+                              ? 'Retourné'
+                              : isLate
+                                ? 'En retard'
+                                : 'En cours';
+                            const statusClass = loan.date_retour_effective
+                              ? 'ok'
+                              : isLate
+                                ? 'danger'
+                                : 'warn';
+
+                            return (
+                              <tr key={loan.id}>
+                                <td>{bookTitle}</td>
+                                <td style={{ fontFamily: "'Courier New', monospace", fontSize: '.75rem' }}>{bookCode}</td>
+                                <td>{formatDate(loan.date_emprunt)}</td>
+                                <td>{formatDate(loan.date_retour_prevue)}</td>
+                                <td>
+                                  <span className={`bk-history-badge ${statusClass}`}>{status}</span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+
+                  <div className="bk-history-card">
+                    <div className="bk-history-card-title">{t('Mes consultations')}</div>
+                    {readerConsultations.length === 0 ? (
+                      <div className="bk-history-empty">
+                        <p>{t('Vous n’avez aucune consultation enregistrée pour le moment.')}</p>
+                      </div>
+                    ) : (
+                      <table className="bk-history-table">
+                        <thead>
+                          <tr>
+                            <th>{t('Ouvrage')}</th>
+                            <th>{t('Code')}</th>
+                            <th>{t('Début')}</th>
+                            <th>{t('Fin')}</th>
+                            <th>{t('Durée')}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {readerConsultations.map((item) => {
+                            const bookTitle = item.Book?.titre || item.titre || '—';
+                            const bookCode = item.Book?.code || item.code || '—';
+                            const start = item.heure_debut || item.date_debut || item.createdAt;
+                            const end = item.heure_fin || item.date_fin;
+                            const duration = start && end
+                              ? `${Math.max(0, Math.round((new Date(end) - new Date(start)) / 60000))} min`
+                              : '—';
+
+                            return (
+                              <tr key={item.id}>
+                                <td>{bookTitle}</td>
+                                <td style={{ fontFamily: "'Courier New', monospace", fontSize: '.75rem' }}>{bookCode}</td>
+                                <td>{formatDateTime(start)}</td>
+                                <td>{formatDateTime(end)}</td>
+                                <td>{duration}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
                 </>
               )}
             </>
+          )}
+
+          {page === 'settings' && (
+            <div className="bk-settings-page">
+              <SettingsPanel />
+            </div>
+          )}
+
+          {page === 'local' && (
+            <BooksPanel readOnly />
           )}
  
           {/* ══ PAGE LIVRES EN LIGNE ══ */}
@@ -1232,7 +1851,7 @@ export default function Books() {
                     className={`bk-cat${category === cat.key ? ' active' : ''}`}
                     onClick={() => selectCategory(cat.key)}
                   >
-                    {cat.emoji} {t(cat.labelKey)}
+                    {cat.label}
                   </button>
                 ))}
               </div>
@@ -1254,10 +1873,7 @@ export default function Books() {
                 <>
                   <div className="bk-section-label">
                     🌐 {onlineBooks.length} {t('livres gratuits')} · {
-                      (() => {
-                        const selected = CATEGORIES.find(c => c.key === category);
-                        return selected ? `${selected.emoji} ${t(selected.labelKey)}` : category;
-                      })()
+                      CATEGORIES.find(c => c.key === category)?.label || category
                     }
                   </div>
                   <div className="bk-grid">
@@ -1274,14 +1890,6 @@ export default function Books() {
       </div>
 
       {/* MODAL DETAILS */}
-      {showSettings && (
-        <div className="bk-settings-modal" onClick={() => setShowSettings(false)}>
-          <div className="bk-modal-content" onClick={e => e.stopPropagation()}>
-            <SettingsPanel inModal={true} onClose={() => setShowSettings(false)} />
-          </div>
-        </div>
-      )}
-
       {selectedBook && (
         <BookDetailsPanel
           book={selectedBook}

@@ -438,7 +438,7 @@ function BookCover({ book, index }) {
 /* ═══════════════════════════════════════════
    COMPOSANT PRINCIPAL
 ═══════════════════════════════════════════ */
-export default function BooksPanel({ onChange }) {
+export default function BooksPanel({ onChange, readOnly = false }) {
   const { t } = useTranslation();
   const [books,        setBooks]        = useState([]);
   const [localQuery,   setLocalQuery]   = useState('');
@@ -563,10 +563,12 @@ export default function BooksPanel({ onChange }) {
             onChange={setLocalQuery}
             placeholder={t("Titre, auteur, code...")}
           />
-          <button className="bp-btn-new" onClick={openNew}>
-            <span style={{fontSize:'1.1rem'}}>＋</span>
-            {t('Nouvel ouvrage')}
-          </button>
+          {!readOnly && (
+            <button className="bp-btn-new" onClick={openNew}>
+              <span style={{fontSize:'1.1rem'}}>＋</span>
+              {t('Nouvel ouvrage')}
+            </button>
+          )}
         </div>
       </div>
  
@@ -673,20 +675,24 @@ export default function BooksPanel({ onChange }) {
                   >
                     👁 {t('Détails')}
                   </button>
-                  <button
-                    className="book-btn bk-edit"
-                    title={t('Modifier')}
-                    onClick={() => openEdit(b)}
-                  >
-                    ✏️
-                  </button>
-                  <button
-                    className="book-btn bk-delete"
-                    title={t('Supprimer')}
-                    onClick={() => remove(b.id)}
-                  >
-                    🗑
-                  </button>
+                  {!readOnly && (
+                    <>
+                      <button
+                        className="book-btn bk-edit"
+                        title={t('Modifier')}
+                        onClick={() => openEdit(b)}
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className="book-btn bk-delete"
+                        title={t('Supprimer')}
+                        onClick={() => remove(b.id)}
+                      >
+                        🗑
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             );
@@ -695,7 +701,7 @@ export default function BooksPanel({ onChange }) {
       )}
  
       {/* ══ MODAL FORMULAIRE ══ */}
-      {modal && (
+      {modal && !readOnly && (
         <Modal title={editing ? t("Modifier l'ouvrage") : t("Ajouter un nouvel ouvrage")}>
           <form onSubmit={submit}>
             <div className="bp-form">

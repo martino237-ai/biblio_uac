@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { Reader } = require("../models");
+const { Reader, Loan, Consultation, Book, User } = require("../models");
 const { logActivity } = require('../utils/activityLogger');
 
 // Liste des lecteurs (avec recherche facultative)
@@ -29,6 +29,46 @@ exports.getAllReaders = async (req, res) => {
   }
 };
 
+// Récupérer la fiche lecteur liée à l'utilisateur connecté
+exports.getCurrentReader = async (req, res) => {
+  try {
+    const username = req.user?.username;
+    if (!username) return res.status(401).json({ error: 'Authentification requise' });
+
+    const user = req.user?.id ? await User.findByPk(req.user.id) : null;
+    const identifiers = [
+      username,
+      user?.username,
+      user?.email
+    ].filter(Boolean);
+
+    let reader = await Reader.findOne({
+      where: {
+        [Op.or]: [
+          { email: { [Op.in]: identifiers } },
+          { matricule: { [Op.in]: identifiers } }
+        ]
+      }
+    });
+
+    if (!reader && user?.nom) {
+      const [nom, ...prenomParts] = user.nom.trim().split(/\s+/);
+      const prenom = prenomParts.join(' ');
+      if (nom && prenom) {
+        reader = await Reader.findOne({ where: { nom, prenom } });
+      }
+    }
+    if (!reader) {
+      return res.status(404).json({ error: 'Aucun lecteur associé à cet utilisateur' });
+    }
+
+    res.json(reader);
+  } catch (err) {
+    console.error('❌ Erreur getCurrentReader:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
+
 // Récupérer un lecteur par ID
 exports.getReaderById = async (req, res) => {
   try {
@@ -38,6 +78,42 @@ exports.getReaderById = async (req, res) => {
   } catch (err) {
     console.error("❌ Erreur getReaderById:", err);
     res.status(500).json({ error: "Erreur serveur" });
+  }
+};
+
+exports.getReaderLoans = async (req, res) => {
+  try {
+    const reader = await Reader.findByPk(req.params.id);
+    if (!reader) return res.status(404).json({ error: "Lecteur introuvable" });
+
+    const loans = await Loan.findAll({
+      where: { lecteur_id: req.params.id },
+      include: [{ model: Book, as: 'Book' }],
+      order: [['date_emprunt', 'DESC']]
+    });
+
+    res.json(loans);
+  } catch (err) {
+    console.error("❌ Erreur getReaderLoans:", err);
+    res.status(500).json({ error: "Impossible de charger les emprunts du lecteur" });
+  }
+};
+
+exports.getReaderConsultations = async (req, res) => {
+  try {
+    const reader = await Reader.findByPk(req.params.id);
+    if (!reader) return res.status(404).json({ error: "Lecteur introuvable" });
+
+    const consultations = await Consultation.findAll({
+      where: { lecteur_id: req.params.id },
+      include: [{ model: Book, as: 'Book' }],
+      order: [['heure_debut', 'DESC']]
+    });
+
+    res.json(consultations);
+  } catch (err) {
+    console.error("❌ Erreur getReaderConsultations:", err);
+    res.status(500).json({ error: "Impossible de charger les consultations du lecteur" });
   }
 };
 

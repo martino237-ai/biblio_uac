@@ -7,20 +7,21 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
-    console.log('🔍 Login attempt:', { username, password });
+    // Avoid logging sensitive data like passwords or full usernames/emails in plain text
+    console.info('🔍 Login attempt received');
     
     if (!username) return res.status(400).json({ message: 'username requis' });
 
     const user = await User.findOne({ where: { username } });
-    console.log('👤 User found:', user ? { id: user.id, username: user.username, role: user.role } : 'NOT FOUND');
+    // Log only non-sensitive identifiers (id and role) to aid debugging without exposing credentials
+    console.info('👤 User lookup result:', user ? { id: user.id, role: user.role } : 'NOT FOUND');
     
     if (!user) return res.status(401).json({ message: 'Utilisateur introuvable' });
 
     if (!password) return res.status(400).json({ message: 'Mot de passe requis' });
 
     const ok = await bcrypt.compare(password, user.password_hash);
-    console.log('🔐 Password match:', ok);
-    
+    // Do not log password comparison result with details that could help an attacker
     if (!ok) return res.status(401).json({ message: 'Mot de passe incorrect' });
 
     const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '8h' });
@@ -95,6 +96,10 @@ exports.registerReader = async (req, res) => {
     const existingUser = await User.findOne({ where: { username } });
     if (existingUser) return res.status(400).json({ message: 'Un compte avec cet email existe déjà' });
 
+    const accountEmail = email || username;
+    const existingEmail = await User.findOne({ where: { email: accountEmail } });
+    if (existingEmail) return res.status(400).json({ message: 'Cet email est déjà utilisé' });
+
     let reader;
     if (readerId) {
       // update existing record
@@ -132,7 +137,8 @@ exports.registerReader = async (req, res) => {
       username,
       password_hash,
       nom: `${nom} ${prenom}`,
-      role: 'lecteur'
+      role: 'lecteur',
+      email: accountEmail
     });
 
     // generate token
