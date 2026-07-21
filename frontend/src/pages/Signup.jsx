@@ -20,7 +20,7 @@ const CSS = `
   position: fixed; top: 0; left: 0; width: 100%; z-index: 200;
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 40px; height: 68px;
-  background: rgba(7,22,60,.92);
+  background: rgba(7,22,60,.80);
   backdrop-filter: blur(14px);
 }
 .su-navbar-brand {
@@ -78,9 +78,9 @@ const CSS = `
   position: absolute; inset: 0;
   background: linear-gradient(
     135deg,
-    rgba(7,22,60,.88) 0%,
-    rgba(15,40,100,.70) 50%,
-    rgba(7,22,60,.90) 100%
+    rgba(7,22,60,.70) 0%,
+    rgba(15,40,100,.48) 50%,
+    rgba(7,22,60,.76) 100%
   );
 }
 .su-left-inner {
@@ -144,7 +144,7 @@ const CSS = `
    PANNEAU DROIT — scrollable
 ══════════════════════════════ */
 .su-right {
-  background: linear-gradient(160deg, #0c1a45 0%, #0f1f55 50%, #091230 100%);
+  background: linear-gradient(160deg, #1a5c94 0%, #2c75b0 50%, #152940 100%);
   overflow-y: auto;
   min-height: calc(100vh - 68px);
 }
@@ -187,8 +187,8 @@ const CSS = `
  
 /* ══ BLOC DE GROUPE ══ */
 .su-group {
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
   border-radius: 14px; padding: 18px; margin-bottom: 14px;
 }
 .su-group-title {
@@ -211,12 +211,12 @@ const CSS = `
 .su-field input,
 .su-field select {
   width: 100%; padding: 10px 13px;
-  border: 1.5px solid rgba(255,255,255,.1); border-radius: 10px;
+  border: 1.5px solid rgba(255,255,255,.16); border-radius: 10px;
   font-family: 'Inter', sans-serif; font-size: .875rem;
-  color: #fff; background: rgba(255,255,255,.07); outline: none;
+  color: #fff; background: rgba(255,255,255,.12); outline: none;
   transition: border-color .18s, box-shadow .18s, background .18s;
 }
-.su-field input::placeholder { color: rgba(255,255,255,.25); }
+.su-field input::placeholder { color: rgba(255,255,255,.35); }
 .su-field select option { background: #0f1f55; color: #fff; }
 .su-field input:focus,
 .su-field select:focus {

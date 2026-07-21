@@ -138,12 +138,16 @@ const CSS = `
  
 /* ══ PANNEAU DROIT ══ */
 .lg-right {
-  background: linear-gradient(160deg, #0c1a45 0%, #0f1f55 55%, #091230 100%);
+  background: linear-gradient(160deg, #173f7a 0%, #2965a8 55%, #122d54 100%);
   display: flex; align-items: center; justify-content: center;
   min-height: calc(100vh - 68px); overflow-y: auto;
 }
 .lg-form-wrap {
   width: 100%; max-width: 440px; padding: 48px 48px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 24px;
+  box-shadow: 0 20px 70px rgba(4,19,59,.22);
 }
  
 /* ── Titre formulaire ── */
@@ -178,12 +182,12 @@ const CSS = `
 }
 .lg-field input {
   width: 100%; padding: 12px 14px;
-  border: 1.5px solid rgba(255,255,255,.1); border-radius: 11px;
+  border: 1.5px solid rgba(255,255,255,.16); border-radius: 11px;
   font-family: 'Inter', sans-serif; font-size: .9rem;
-  color: #fff; background: rgba(255,255,255,.07); outline: none;
+  color: #fff; background: rgba(255,255,255,.12); outline: none;
   transition: border-color .18s, box-shadow .18s, background .18s;
 }
-.lg-field input::placeholder { color: rgba(255,255,255,.2); }
+.lg-field input::placeholder { color: rgba(255,255,255,.35); }
 .lg-field input:focus {
   border-color: #fbbf24;
   box-shadow: 0 0 0 3px rgba(251,191,36,.12);
@@ -254,8 +258,19 @@ const CSS = `
 .lg-test-rows { display: flex; flex-direction: column; gap: 7px; }
 .lg-test-row {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 7px 10px; border-radius: 8px;
+  width: 100%; padding: 7px 10px; border-radius: 8px;
   background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06);
+  color: rgba(255,255,255,.85); cursor: pointer;
+  transition: background .18s, transform .18s;
+}
+.lg-test-row:hover,
+.lg-test-row:focus-visible {
+  background: rgba(255,255,255,.1);
+  transform: translateY(-1px);
+}
+.lg-test-row:disabled {
+  opacity: .65;
+  cursor: not-allowed;
 }
 .lg-test-role {
   display: flex; align-items: center; gap: 7px;
@@ -325,6 +340,19 @@ export default function Login() {
   const [loading,         setLoading]         = useState(false);
   const [error,           setError]           = useState('');
   const [redirectLoading, setRedirectLoading] = useState(false);
+ 
+  const testAccounts = [
+    { label: 'Admin', username: 'admin', password: 'password', variant: 'admin' },
+    { label: 'Biblio', username: 'biblio', password: 'password', variant: 'biblio' },
+    { label: 'Lecteur', username: 'martin', password: 'password', variant: 'reader' },
+    
+  ];
+ 
+  const fillTestCredentials = ({ username, password }) => {
+    setUsername(username);
+    setPassword(password);
+    setError('');
+  };
  
   injectCSS('lg-css', CSS);
  
@@ -540,30 +568,20 @@ export default function Login() {
                 🔑 {t('Identifiants de test')}
               </div>
               <div className="lg-test-rows">
-                <div className="lg-test-row">
-                  <div className="lg-test-role">
-                    <span className="lg-test-badge admin">Admin</span>
-                  </div>
-                  <span className="lg-test-creds">admin / password</span>
-                </div>
-                <div className="lg-test-row">
-                  <div className="lg-test-role">
-                    <span className="lg-test-badge biblio">Biblio</span>
-                  </div>
-                  <span className="lg-test-creds">biblio / password</span>
-                </div>
-                <div className="lg-test-row">
-                  <div className="lg-test-role">
-                    <span className="lg-test-badge reader">Lecteur</span>
-                  </div>
-                  <span className="lg-test-creds">MART / password</span>
-                </div>
-                <div className="lg-test-row">
-                  <div className="lg-test-role">
-                    <span className="lg-test-badge reader">Lecteur 2</span>
-                  </div>
-                  <span className="lg-test-creds">test.lecteur@uac.edu / password</span>
-                </div>
+                {testAccounts.map(acc => (
+                  <button
+                    key={acc.username}
+                    type="button"
+                    className="lg-test-row"
+                    onClick={() => fillTestCredentials(acc)}
+                    disabled={loading}
+                  >
+                    <div className="lg-test-role">
+                      <span className={`lg-test-badge ${acc.variant}`}>{acc.label}</span>
+                    </div>
+                    <span className="lg-test-creds">{acc.username} / {acc.password}</span>
+                  </button>
+                ))}
               </div>
             </div>
  

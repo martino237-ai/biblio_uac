@@ -29,13 +29,13 @@ const CSS = `
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 40px;
   height: 68px;
-  background: rgba(7,22,60,.85);
+  background: rgba(7,22,60,.64);
   backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  border-bottom: 1px solid rgba(255,255,255,.16);
   transition: background .3s;
 }
 .home-nav.scrolled {
-  background: rgba(7,22,60,.98);
+  background: rgba(7,22,60,.80);
 }
 .home-nav-brand {
   display: flex; align-items: center; gap: 12px;
@@ -107,9 +107,9 @@ const CSS = `
   position: absolute; inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(7,22,60,.72) 0%,
-    rgba(7,22,60,.55) 50%,
-    rgba(7,22,60,.85) 100%
+    rgba(7,22,60,.52) 0%,
+    rgba(7,22,60,.32) 50%,
+    rgba(7,22,60,.62) 100%
   );
 }
 .home-hero-content {
@@ -288,7 +288,7 @@ const CSS = `
    BENEFITS
 ══════════════════════════════ */
 .home-benefits {
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #1d4ed8 100%);
+  background: linear-gradient(135deg, #112a56 0%, #2054a8 50%, #2563eb 100%);
   padding: 100px 40px; position: relative; overflow: hidden;
 }
 .home-benefits::before {
@@ -311,8 +311,8 @@ const CSS = `
 }
 .benefit-item {
   display: flex; gap: 16px; align-items: flex-start;
-  background: rgba(255,255,255,.07);
-  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.18);
   border-radius: 14px; padding: 20px;
   transition: background .3s, border-color .3s, transform .3s;
   backdrop-filter: blur(8px);
