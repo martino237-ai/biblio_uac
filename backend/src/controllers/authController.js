@@ -105,6 +105,13 @@ exports.registerReader = async (req, res) => {
       // update existing record
       reader = await require('../models').Reader.findByPk(readerId);
       if (!reader) return res.status(404).json({ message: 'Lecteur introuvable' });
+
+      // un lecteur ne peut être lié qu'à un seul compte utilisateur
+      const alreadyLinked = await User.findOne({ where: { reader_id: readerId } });
+      if (alreadyLinked) {
+        return res.status(400).json({ message: 'Ce lecteur possède déjà un compte utilisateur. Veuillez vous connecter.' });
+      }
+
       await reader.update({
         nom,
         prenom,
@@ -138,7 +145,8 @@ exports.registerReader = async (req, res) => {
       password_hash,
       nom: `${nom} ${prenom}`,
       role: 'lecteur',
-      email: accountEmail
+      email: accountEmail,
+      reader_id: reader.id
     });
 
     // generate token
@@ -259,4 +267,66 @@ exports.updateProfile = async (req, res) => {
     console.error(err);
     res.status(500).json({ message: 'Erreur serveur' });
   }
+};
+
+// Import en masse d'utilisateurs depuis un fichier Excel (réservé au directeur)
+exports.importUsers = async (req, res) => {
+  const { Reader } = require('../models');
+  const rows = Array.isArray(req.body.rows) ? req.body.rows : [];
+  let created = 0, updated = 0;
+  const errors = [];
+
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i] || {};
+    const rowNum = i + 2; // ligne 1 = en-têtes
+    try {
+      const username = (r.username || '').toString().trim();
+      if (!username) { errors.push({ row: rowNum, message: "Nom d'utilisateur requis" }); continue; }
+
+      const role = ['bibliothecaire', 'directeur', 'lecteur'].includes(r.role) ? r.role : 'bibliothecaire';
+      const password = (r.password || '').toString().trim();
+
+      let reader_id;
+      const matriculeLecteur = (r.matricule_lecteur || '').toString().trim();
+      if (matriculeLecteur) {
+        const reader = await Reader.findOne({ where: { matricule: matriculeLecteur } });
+        if (!reader) { errors.push({ row: rowNum, message: `Lecteur introuvable (matricule ${matriculeLecteur})` }); continue; }
+        const linked = await User.findOne({ where: { reader_id: reader.id } });
+        if (linked && linked.username !== username) {
+          errors.push({ row: rowNum, message: `Ce lecteur est déjà lié au compte "${linked.username}"` });
+          continue;
+        }
+        reader_id = reader.id;
+      }
+
+      const existing = await User.findOne({ where: { username } });
+      if (existing) {
+        const updateData = {
+          nom: r.nom || existing.nom,
+          email: r.email || existing.email,
+          role
+        };
+        if (reader_id !== undefined) updateData.reader_id = reader_id;
+        if (password) updateData.password_hash = await bcrypt.hash(password, 10);
+        await existing.update(updateData);
+        updated++;
+      } else {
+        if (!password) { errors.push({ row: rowNum, message: 'Mot de passe requis pour créer un nouveau compte' }); continue; }
+        await User.create({
+          username,
+          password_hash: await bcrypt.hash(password, 10),
+          nom: r.nom || username,
+          email: r.email || null,
+          role,
+          reader_id: reader_id ?? null
+        });
+        created++;
+      }
+    } catch (err) {
+      errors.push({ row: rowNum, message: err.message });
+    }
+  }
+
+  logActivity(req.user?.id, 'Import utilisateurs', { created, updated, errors: errors.length });
+  res.json({ created, updated, errors });
 };

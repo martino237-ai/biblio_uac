@@ -2,7 +2,26 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
 import Modal from '../shared/Modal';
+import ExportButton from '../shared/ExportButton';
+import ImportExcelButton from '../shared/ImportExcelButton';
 import { generateSimplePDF } from '../utils/pdfGenerator';
+
+const CONSULT_EXPORT_COLUMNS = [
+  { key: 'Reader.matricule', label: 'Matricule lecteur' },
+  { key: 'Reader.nom', label: 'Nom lecteur' },
+  { key: 'Reader.prenom', label: 'Prénom lecteur' },
+  { key: 'Book.code', label: 'Code livre' },
+  { key: 'Book.titre', label: 'Titre livre' },
+  { key: 'heure_debut', label: 'Début' },
+  { key: 'heure_fin', label: 'Fin' }
+];
+
+const CONSULT_IMPORT_COLUMNS = [
+  { key: 'matricule', label: 'Matricule lecteur*', example: 'UAC2024001' },
+  { key: 'code_livre', label: 'Code livre', example: 'UAC-0001' },
+  { key: 'heure_debut', label: 'Début (AAAA-MM-JJ HH:MM)*', example: '2026-01-10 09:30' },
+  { key: 'heure_fin', label: 'Fin (AAAA-MM-JJ HH:MM, vide si en cours)', example: '' }
+];
  
 /* ═══════════════════════════════════════════════════════════
    STYLES
@@ -445,6 +464,20 @@ export default function ConsultationsPanel({ query = '', onChange }) {
         <input type="date" className="cp-date-input" value={endDate}
           onChange={e => setEndDate(e.target.value)}/>
         <div className="cp-toolbar-sep"/>
+        <ExportButton
+          endpoint="/consultations"
+          filename="consultations.xlsx"
+          label={t('Excel')}
+          format="xlsx"
+          columns={CONSULT_EXPORT_COLUMNS}
+        />
+        <ImportExcelButton
+          endpoint="/consultations/import"
+          columns={CONSULT_IMPORT_COLUMNS}
+          templateFilename="modele_consultations.xlsx"
+          title={t('Import des consultations')}
+          onImported={fetchAll}
+        />
         <button className="cp-btn cp-btn-pdf" onClick={exportToPDF}>
           📄 {t('Exporter PDF')}
         </button>

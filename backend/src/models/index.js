@@ -19,4 +19,7 @@ Consultation.belongsTo(Reader, { foreignKey: 'lecteur_id', as: 'Reader' });
 Book.hasMany(Consultation, { foreignKey: { name: 'livre_id', allowNull: true }, onDelete: 'SET NULL', onUpdate: 'CASCADE' });
 Consultation.belongsTo(Book, { foreignKey: 'livre_id', as: 'Book' });
 
+Reader.hasOne(User, { foreignKey: 'reader_id', as: 'User' });
+User.belongsTo(Reader, { foreignKey: 'reader_id', as: 'Reader' });
+
 module.exports = { sequelize, Book, Reader, Loan, Consultation, Activity, User };

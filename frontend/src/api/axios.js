@@ -15,7 +15,7 @@ const api = axios.create({
 // sauf pour login/register qui n'en ont pas besoin
 api.interceptors.request.use(cfg => {
   // Les endpoints qui NE doivent PAS avoir le token
-  const noAuthEndpoints = ['/auth/login', '/auth/register', '/auth/register-reader'];
+  const noAuthEndpoints = ['/auth/login', '/auth/register', '/auth/register-reader', '/readers/lookup'];
   const shouldSkipToken = noAuthEndpoints.some(endpoint => cfg.url && cfg.url.includes(endpoint));
   
   if (!shouldSkipToken) {

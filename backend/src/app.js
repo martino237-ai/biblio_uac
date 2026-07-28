@@ -5,7 +5,8 @@ const app = express();
 const statsRoutes = require('./routes/stats');
 
 app.use(cors());
-app.use(express.json());
+// limite relevée pour accepter les imports Excel en masse (résumés de livres, etc.)
+app.use(express.json({ limit: '10mb' }));
 
 // health
 app.get('/', (req, res) => res.json({ ok: true, message: 'API Bibliothèque UAC' }));

@@ -296,6 +296,17 @@ const CSS = `
   color: #fbbf24; font-weight: 600; text-decoration: none; cursor: pointer;
 }
 .su-login-link a:hover { text-decoration: underline; }
+
+/* ══ BASCULE "DÉJÀ INSCRIT" ══ */
+.su-mode-toggle {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25);
+  border-radius: 10px; padding: 10px 14px; margin-bottom: 20px;
+  color: #fbbf24; font-size: .8rem; font-weight: 600;
+  cursor: pointer; width: 100%; font-family: 'Inter', sans-serif;
+  transition: background .18s;
+}
+.su-mode-toggle:hover { background: rgba(251,191,36,.15); }
  
 /* ══ PASSWORD STRENGTH ══ */
 .su-pw-bar-wrap {
@@ -382,11 +393,14 @@ export default function Signup() {
   const navigate = useNavigate();
  
   const [step,            setStep]            = useState(1);
+  const [mode,            setMode]            = useState('create'); // 'create' | 'lookup'
   const [loading,         setLoading]         = useState(false);
+  const [lookupLoading,   setLookupLoading]   = useState(false);
   const [redirectLoading, setRedirectLoading] = useState(false);
   const [error,           setError]           = useState('');
   const [readerCreated,   setReaderCreated]   = useState(null);
- 
+  const [lookupMatricule, setLookupMatricule] = useState('');
+
   const [reader, setReader] = useState({
     nom:'', prenom:'', type:'etudiant', faculte:'', filiere:'',
     niveau:'', telephone:'', matricule:'', email:''
@@ -429,6 +443,26 @@ export default function Signup() {
     } finally { setLoading(false); }
   }
  
+  async function lookupReader(e) {
+    e.preventDefault();
+    if (!lookupMatricule.trim()) { setError(t('Matricule requis')); return; }
+    setError(''); setLookupLoading(true);
+    try {
+      const res = await api.get(`/readers/lookup/${encodeURIComponent(lookupMatricule.trim())}`);
+      const found = res.data;
+      setReader(r => ({
+        ...r,
+        nom: found.nom || '', prenom: found.prenom || '', type: found.type || 'etudiant',
+        faculte: found.faculte || '', filiere: found.filiere || '', niveau: found.niveau || '',
+        telephone: found.telephone || '', matricule: found.matricule || '', email: found.email || ''
+      }));
+      setReaderCreated(found);
+      setStep(2);
+    } catch (err) {
+      setError(err?.response?.data?.error || err?.message || t('Aucun lecteur trouvé avec ce matricule'));
+    } finally { setLookupLoading(false); }
+  }
+
   async function submit(e) {
     e.preventDefault();
     if (!creds.username) { setError(t("Nom d'utilisateur requis")); return; }
@@ -577,11 +611,50 @@ export default function Signup() {
             ══════════════════ */}
             {step === 1 && (
               <>
+                <button
+                  type="button"
+                  className="su-mode-toggle"
+                  onClick={() => { setMode(m => m === 'create' ? 'lookup' : 'create'); setError(''); }}
+                >
+                  {mode === 'create'
+                    ? <>👤 {t('Déjà inscrit en tant que lecteur ? Cliquez ici')}</>
+                    : <>← {t('Nouveau lecteur ? Créer un profil complet')}</>}
+                </button>
+
+                {mode === 'lookup' ? (
+                  <>
+                    <p className="su-section-title">{t('Retrouver votre profil lecteur')}</p>
+                    <p className="su-section-sub">
+                      {t("Votre profil lecteur a déjà été créé par le bibliothécaire, ou lors d'une inscription précédente. Saisissez votre matricule pour créer uniquement votre compte de connexion.")}
+                    </p>
+
+                    <form onSubmit={lookupReader}>
+                      <div className="su-group">
+                        <div className="su-group-title">🔎 {t('Identification')}</div>
+                        <div className="su-grid-2">
+                          <F label={`${t('Matricule')} *`} s2>
+                            <input
+                              value={lookupMatricule}
+                              onChange={(e) => setLookupMatricule(e.target.value)}
+                              required disabled={lookupLoading}
+                              placeholder="Ex: UAC2024001"
+                            />
+                          </F>
+                        </div>
+                      </div>
+
+                      <button type="submit" className="su-btn su-btn-yellow" disabled={lookupLoading}>
+                        {lookupLoading ? <><Spin/> {t('Vérification...')}</> : <>{t('Vérifier mon matricule')} →</>}
+                      </button>
+                    </form>
+                  </>
+                ) : (
+                  <>
                 <p className="su-section-title">{t('Informations personnelles')}</p>
                 <p className="su-section-sub">
                   {t('Renseignez toutes vos informations pour créer votre profil lecteur.')}
                 </p>
- 
+
                 <form onSubmit={goNext}>
  
                   {/* Bloc 1 — Identité */}
@@ -699,7 +772,9 @@ export default function Signup() {
                     {loading ? <><Spin/> {t('Création...')}</> : <>{t('Suivant')} →</>}
                   </button>
                 </form>
- 
+                  </>
+                )}
+
                 <div className="su-login-link">
                   {t('Déjà un compte ?')}{' '}
                   <a onClick={() => navigate('/login')}>{t('Se connecter')}</a>

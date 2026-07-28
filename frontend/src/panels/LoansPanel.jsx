@@ -2,7 +2,33 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
 import Modal from '../shared/Modal';
+import ExportButton from '../shared/ExportButton';
+import ImportExcelButton from '../shared/ImportExcelButton';
 import { generateSimplePDF } from '../utils/pdfGenerator';
+
+const LOAN_EXPORT_COLUMNS = [
+  { key: 'Reader.matricule', label: 'Matricule lecteur' },
+  { key: 'Reader.nom', label: 'Nom lecteur' },
+  { key: 'Reader.prenom', label: 'Prénom lecteur' },
+  { key: 'Book.code', label: 'Code livre' },
+  { key: 'Book.titre', label: 'Titre livre' },
+  { key: 'date_emprunt', label: "Date d'emprunt" },
+  { key: 'date_retour_prevue', label: 'Date de retour prévue' },
+  { key: 'date_retour_effective', label: 'Date de retour effective' },
+  { key: 'type_emprunt', label: "Type d'emprunt" },
+  { key: 'statut', label: 'Statut' },
+  { key: 'prolongations', label: 'Prolongations' }
+];
+
+const LOAN_IMPORT_COLUMNS = [
+  { key: 'matricule', label: 'Matricule lecteur*', example: 'UAC2024001' },
+  { key: 'code_livre', label: 'Code livre*', example: 'UAC-0001' },
+  { key: 'date_emprunt', label: "Date d'emprunt (AAAA-MM-JJ)*", example: '2026-01-10' },
+  { key: 'date_retour_prevue', label: 'Date de retour prévue (AAAA-MM-JJ)*', example: '2026-01-24' },
+  { key: 'type_emprunt', label: 'Type (normal/prolonge/limite)', example: 'normal' },
+  { key: 'statut', label: 'Statut (emprunte/retourne/en_retard)', example: 'emprunte' },
+  { key: 'date_retour_effective', label: 'Date de retour effective (si déjà retourné)', example: '' }
+];
  
 /* ═══════════════════════════════════════════════════════════
    STYLES
@@ -542,6 +568,21 @@ export default function LoansPanel({ query = '', onChange }) {
           <option value="retourne">{t('Retournés')}</option>
         </select>
         <div className="lp-toolbar-space"/>
+        <ExportButton
+          endpoint="/loans"
+          filename="emprunts.xlsx"
+          label={t('Excel')}
+          format="xlsx"
+          columns={LOAN_EXPORT_COLUMNS}
+        />
+        <ImportExcelButton
+          endpoint="/loans/import"
+          columns={LOAN_IMPORT_COLUMNS}
+          templateFilename="modele_emprunts.xlsx"
+          title={t('Import des emprunts')}
+          note={t("Les quantités disponibles des livres ne sont pas modifiées automatiquement par cet import.")}
+          onImported={fetchAll}
+        />
         <button className="lp-btn lp-btn-pdf" onClick={exportToPDF}>
           📄 PDF
         </button>

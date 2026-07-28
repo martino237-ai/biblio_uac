@@ -3,9 +3,24 @@ import { useTranslation } from 'react-i18next';
 import api from "../api/axios";
 import Modal from "../shared/Modal";
 import SearchBar from "../shared/SearchBar";
+import ExportButton from "../shared/ExportButton";
+import ImportExcelButton from "../shared/ImportExcelButton";
 import ReaderDetailsPanel from "./ReaderDetailsPanel";
 import { FACULTY_OPTIONS, getFiliereOptions } from "../utils/faculties";
- 
+
+const READER_IMPORT_COLUMNS = [
+  { key: 'matricule', label: 'Matricule', example: 'UAC2024099' },
+  { key: 'nom', label: 'Nom*', example: 'Koné' },
+  { key: 'prenom', label: 'Prénom*', example: 'Amara' },
+  { key: 'type', label: 'Type (etudiant/enseignant/personnel/autre)', example: 'etudiant' },
+  { key: 'faculte', label: 'Faculté', example: '' },
+  { key: 'filiere', label: 'Filière', example: '' },
+  { key: 'niveau', label: 'Niveau', example: 'L1' },
+  { key: 'email', label: 'Email', example: '' },
+  { key: 'telephone', label: 'Téléphone', example: '' },
+  { key: 'date_inscription', label: "Date d'inscription (AAAA-MM-JJ)", example: '' }
+];
+
 /* ═══════════════════════════════════════════════════════════
    STYLES
 ═══════════════════════════════════════════════════════════ */
@@ -405,6 +420,20 @@ export default function ReadersPanel({ onChange }) {
             value={localQuery}
             onChange={setLocalQuery}
             placeholder={t("Nom, matricule, filière...")}
+          />
+          <ExportButton
+            endpoint="/readers"
+            filename="lecteurs.xlsx"
+            label={t('Exporter Excel')}
+            format="xlsx"
+            columns={READER_IMPORT_COLUMNS.map(c => ({ key: c.key, label: c.label }))}
+          />
+          <ImportExcelButton
+            endpoint="/readers/import"
+            columns={READER_IMPORT_COLUMNS}
+            templateFilename="modele_lecteurs.xlsx"
+            title={t('Import des lecteurs')}
+            onImported={fetchReaders}
           />
           <button className="rp-btn-new" onClick={openNew}>
             <span style={{fontSize:'1rem'}}>＋</span>

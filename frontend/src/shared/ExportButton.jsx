@@ -1,6 +1,12 @@
 import React from 'react';
+import * as XLSX from 'xlsx';
 import api from '../api/axios';
 import { generateSimplePDF } from '../utils/pdfGenerator';
+
+// lit une valeur, avec support des chemins imbriqués ("Reader.nom")
+function getPath(obj, path) {
+  return path.split('.').reduce((v, k) => (v == null ? v : v[k]), obj);
+}
 
 export default function ExportButton({
   endpoint,
@@ -16,13 +22,32 @@ export default function ExportButton({
     try {
       const res = await api.get(endpoint);
       const data = res.data || [];
-      
+
       if (!Array.isArray(data) || data.length === 0) {
         alert('Aucune donnee a exporter');
         return;
       }
 
-      if (format === 'csv') {
+      if (format === 'xlsx') {
+        // colonnes en objets { key, label } (chemins imbriqués supportés) ou simples chaînes
+        const cols = (columns && columns.length > 0)
+          ? columns.map(c => (typeof c === 'string' ? { key: c, label: c } : c))
+          : Object.keys(data[0]).map(k => ({ key: k, label: k }));
+
+        const aoa = [
+          cols.map(c => c.label),
+          ...data.map(row => cols.map(c => {
+            let v = getPath(row, c.key);
+            if (v && typeof v === 'object') {
+              try { v = JSON.stringify(v); } catch (e) { v = String(v); }
+            }
+            return v ?? '';
+          }))
+        ];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), 'Export');
+        XLSX.writeFile(wb, filename.endsWith('.xlsx') ? filename : filename + '.xlsx');
+      } else if (format === 'csv') {
         // Export CSV classique
         const keys = Object.keys(data[0]);
         const rows = [

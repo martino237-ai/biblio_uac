@@ -160,6 +160,61 @@ exports.returnLoan = async (req, res) => {
   }
 };
 
+// Import en masse d'emprunts depuis un fichier Excel
+// (upsert par lecteur + livre + date d'emprunt ; ne touche pas aux quantités
+// disponibles des livres, destiné à une saisie/migration de données historiques)
+exports.importLoans = async (req, res) => {
+  const rows = Array.isArray(req.body.rows) ? req.body.rows : [];
+  let created = 0, updated = 0;
+  const errors = [];
+
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i] || {};
+    const rowNum = i + 2;
+    try {
+      const matricule = (r.matricule || '').toString().trim();
+      const codeLivre = (r.code_livre || '').toString().trim();
+      const date_emprunt = (r.date_emprunt || '').toString().trim();
+      const date_retour_prevue = (r.date_retour_prevue || '').toString().trim();
+
+      if (!matricule || !codeLivre || !date_emprunt || !date_retour_prevue) {
+        errors.push({ row: rowNum, message: 'matricule, code_livre, date_emprunt et date_retour_prevue requis' });
+        continue;
+      }
+
+      const reader = await Reader.findOne({ where: { matricule } });
+      if (!reader) { errors.push({ row: rowNum, message: `Lecteur introuvable (matricule ${matricule})` }); continue; }
+
+      const book = await Book.findOne({ where: { code: codeLivre } });
+      if (!book) { errors.push({ row: rowNum, message: `Livre introuvable (code ${codeLivre})` }); continue; }
+
+      const payload = {
+        lecteur_id: reader.id,
+        livre_id: book.id,
+        date_emprunt,
+        date_retour_prevue,
+        type_emprunt: ['normal', 'prolonge', 'limite'].includes(r.type_emprunt) ? r.type_emprunt : 'normal',
+        statut: ['emprunte', 'retourne', 'en_retard'].includes(r.statut) ? r.statut : 'emprunte',
+        date_retour_effective: r.date_retour_effective || null
+      };
+
+      const existing = await Loan.findOne({ where: { lecteur_id: reader.id, livre_id: book.id, date_emprunt } });
+      if (existing) {
+        await existing.update(payload);
+        updated++;
+      } else {
+        await Loan.create(payload);
+        created++;
+      }
+    } catch (err) {
+      errors.push({ row: rowNum, message: err.message });
+    }
+  }
+
+  logActivity(req.user?.id, 'Import emprunts', { created, updated, errors: errors.length });
+  res.json({ created, updated, errors });
+};
+
 exports.renewLoan = async (req, res) => {
   const t = await sequelize.transaction();
   try {

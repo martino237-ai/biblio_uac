@@ -3,9 +3,31 @@ import { useTranslation } from 'react-i18next';
 import api from "../api/axios";
 import Modal from "../shared/Modal";
 import SearchBar from "../shared/SearchBar";
+import ExportButton from "../shared/ExportButton";
+import ImportExcelButton from "../shared/ImportExcelButton";
 import BookDetailsPanel from "./BookDetailsPanel";
 import { getBookCoverCandidates } from "../components/BookCover";
- 
+
+const BOOK_IMPORT_COLUMNS = [
+  { key: 'code', label: 'Code*', example: 'UAC-0011' },
+  { key: 'titre', label: 'Titre*', example: 'Titre du livre' },
+  { key: 'auteur', label: 'Auteur', example: 'Nom Auteur' },
+  { key: 'editeur', label: 'Éditeur', example: '' },
+  { key: 'annee_publication', label: 'Année de publication', example: '2024' },
+  { key: 'edition', label: 'Édition', example: '' },
+  { key: 'langue', label: 'Langue', example: 'Français' },
+  { key: 'nombre_pages', label: 'Nombre de pages', example: '' },
+  { key: 'genre', label: 'Genre', example: '' },
+  { key: 'theme', label: 'Thème', example: '' },
+  { key: 'mots_cles', label: 'Mots-clés', example: '' },
+  { key: 'type_ouvrage', label: 'Type (livre/revue/ouvrage de référence/document académique/memoire/périodique)', example: 'livre' },
+  { key: 'etat', label: 'État (disponible/reparation)', example: 'disponible' },
+  { key: 'total_exemplaires', label: 'Total exemplaires', example: '1' },
+  { key: 'gratuit', label: 'Gratuit (0/1)', example: '0' },
+  { key: 'emplacement', label: 'Emplacement', example: '' },
+  { key: 'resume', label: 'Résumé', example: '' }
+];
+
 /* ═══════════════════════════════════════════════════════════
    STYLES  —  injectés une seule fois dans <head>
 ═══════════════════════════════════════════════════════════ */
@@ -564,10 +586,26 @@ export default function BooksPanel({ onChange, readOnly = false }) {
             placeholder={t("Titre, auteur, code...")}
           />
           {!readOnly && (
-            <button className="bp-btn-new" onClick={openNew}>
-              <span style={{fontSize:'1.1rem'}}>＋</span>
-              {t('Nouvel ouvrage')}
-            </button>
+            <>
+              <ExportButton
+                endpoint="/books"
+                filename="livres.xlsx"
+                label={t('Exporter Excel')}
+                format="xlsx"
+                columns={BOOK_IMPORT_COLUMNS.map(c => ({ key: c.key, label: c.label }))}
+              />
+              <ImportExcelButton
+                endpoint="/books/import"
+                columns={BOOK_IMPORT_COLUMNS}
+                templateFilename="modele_livres.xlsx"
+                title={t('Import des livres')}
+                onImported={fetchBooks}
+              />
+              <button className="bp-btn-new" onClick={openNew}>
+                <span style={{fontSize:'1.1rem'}}>＋</span>
+                {t('Nouvel ouvrage')}
+              </button>
+            </>
           )}
         </div>
       </div>

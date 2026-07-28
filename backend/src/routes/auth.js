@@ -11,6 +11,8 @@ router.post('/register-reader', authCtrl.registerReader);
 
 // only staff may list users; lector should not see list of accounts
 router.get('/users', authenticateToken, requireRole(['bibliothecaire','directeur']), authCtrl.getAllUsers);
+// only directeur can bulk-import user accounts (contains password handling)
+router.post('/users/import', authenticateToken, requireRole(['directeur']), authCtrl.importUsers);
 // only directeur can delete other users
 router.delete('/users/:id', authenticateToken, requireRole(['directeur']), authCtrl.deleteUser);
 // only directeur can update other users

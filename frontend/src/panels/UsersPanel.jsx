@@ -3,10 +3,30 @@ import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
 import Modal from '../shared/Modal';
 import SearchBar from '../shared/SearchBar';
+import ExportButton from '../shared/ExportButton';
+import ImportExcelButton from '../shared/ImportExcelButton';
 import { FACULTY_OPTIONS, getFiliereOptions } from '../utils/faculties';
+
+const USER_EXPORT_COLUMNS = [
+  { key: 'username', label: "Nom d'utilisateur" },
+  { key: 'nom', label: 'Nom' },
+  { key: 'email', label: 'Email' },
+  { key: 'role', label: 'Rôle' }
+];
+
+const USER_IMPORT_COLUMNS = [
+  { key: 'username', label: "Nom d'utilisateur / Email*", example: 'nom.utilisateur' },
+  { key: 'password', label: 'Mot de passe (vide = inchangé si le compte existe déjà)', example: '' },
+  { key: 'nom', label: 'Nom complet', example: '' },
+  { key: 'email', label: 'Email', example: '' },
+  { key: 'role', label: 'Rôle (bibliothecaire/directeur/lecteur)', example: 'bibliothecaire' },
+  { key: 'matricule_lecteur', label: 'Matricule lecteur à lier (optionnel, si rôle=lecteur)', example: '' }
+];
 
 export default function UsersPanel({ onChange }) {
   const { t } = useTranslation();
+  const currentUser = (() => { try { return JSON.parse(localStorage.getItem('user')); } catch { return null; } })();
+  const isDirecteur = currentUser?.role === 'directeur';
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [localQuery, setLocalQuery] = useState('');
@@ -154,12 +174,31 @@ export default function UsersPanel({ onChange }) {
           </div>
         </div>
 
-        <button
-          className="px-6 py-3 bg-blue-600 dark:bg-blue-700 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 dark:hover:bg-blue-600 transition"
-          onClick={openNew}
-        >
-          ➕ Nouvel utilisateur
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <ExportButton
+            endpoint="/auth/users"
+            filename="utilisateurs.xlsx"
+            label={t('Exporter Excel')}
+            format="xlsx"
+            columns={USER_EXPORT_COLUMNS}
+          />
+          {isDirecteur && (
+            <ImportExcelButton
+              endpoint="/auth/users/import"
+              columns={USER_IMPORT_COLUMNS}
+              templateFilename="modele_utilisateurs.xlsx"
+              title={t('Import des utilisateurs')}
+              note={t('Réservé au directeur. Les mots de passe sont hashés automatiquement.')}
+              onImported={fetchUsers}
+            />
+          )}
+          <button
+            className="px-6 py-3 bg-blue-600 dark:bg-blue-700 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 dark:hover:bg-blue-600 transition"
+            onClick={openNew}
+          >
+            ➕ Nouvel utilisateur
+          </button>
+        </div>
       </div>
 
       {/* TABLEAU */}

@@ -103,3 +103,66 @@ exports.searchBooks = async (req, res) => {
     res.status(500).json({ error: 'Erreur recherche livres' });
   }
 };
+
+const TYPE_OUVRAGE_VALUES = ['livre', 'revue', 'ouvrage de référence', 'document académique', 'memoire', 'périodique'];
+const ETAT_VALUES = ['disponible', 'reparation'];
+
+// Import en masse de livres depuis un fichier Excel (upsert par code)
+exports.importBooks = async (req, res) => {
+  const rows = Array.isArray(req.body.rows) ? req.body.rows : [];
+  let created = 0, updated = 0;
+  const errors = [];
+
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i] || {};
+    const rowNum = i + 2;
+    try {
+      const code = (r.code || '').toString().trim();
+      const titre = (r.titre || '').toString().trim();
+      if (!code || !titre) { errors.push({ row: rowNum, message: 'code et titre requis' }); continue; }
+
+      const payload = {
+        code, titre,
+        auteur: r.auteur || null,
+        editeur: r.editeur || null,
+        annee_publication: r.annee_publication ? parseInt(r.annee_publication, 10) : null,
+        edition: r.edition || null,
+        langue: r.langue || null,
+        nombre_pages: r.nombre_pages ? parseInt(r.nombre_pages, 10) : null,
+        genre: r.genre || null,
+        theme: r.theme || null,
+        mots_cles: r.mots_cles || null,
+        emplacement: r.emplacement || null,
+        resume: r.resume || null
+      };
+      if (TYPE_OUVRAGE_VALUES.includes(r.type_ouvrage)) payload.type_ouvrage = r.type_ouvrage;
+      if (ETAT_VALUES.includes(r.etat)) payload.etat = r.etat;
+      if (r.total_exemplaires !== undefined && r.total_exemplaires !== '') {
+        payload.total_exemplaires = Math.max(1, parseInt(r.total_exemplaires, 10) || 1);
+      }
+      if (r.gratuit !== undefined && r.gratuit !== '') {
+        payload.gratuit = ['1', 'true', 'oui'].includes(String(r.gratuit).toLowerCase());
+      }
+
+      const existing = await Book.findOne({ where: { code } });
+      if (existing) {
+        await existing.update(payload);
+        if (existing.exemplaires_disponibles > existing.total_exemplaires) {
+          existing.exemplaires_disponibles = existing.total_exemplaires;
+          await existing.save();
+        }
+        updated++;
+      } else {
+        payload.total_exemplaires = payload.total_exemplaires || 1;
+        payload.exemplaires_disponibles = payload.total_exemplaires;
+        await Book.create(payload);
+        created++;
+      }
+    } catch (err) {
+      errors.push({ row: rowNum, message: err.message });
+    }
+  }
+
+  logActivity(req.user?.id, 'Import livres', { created, updated, errors: errors.length });
+  res.json({ created, updated, errors });
+};

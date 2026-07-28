@@ -29,6 +29,40 @@ exports.getAllReaders = async (req, res) => {
   }
 };
 
+// Vérifier l'existence d'un lecteur par matricule (utilisé lors de l'inscription
+// pour un lecteur déjà créé, sans exposer la liste complète des lecteurs)
+exports.lookupReaderByMatricule = async (req, res) => {
+  try {
+    const matricule = (req.params.matricule || '').trim();
+    if (!matricule) return res.status(400).json({ error: 'Matricule requis' });
+
+    const reader = await Reader.findOne({ where: { matricule } });
+    if (!reader) return res.status(404).json({ error: 'Aucun lecteur trouvé avec ce matricule' });
+
+    const existingUser = await User.findOne({ where: { reader_id: reader.id } });
+    if (existingUser) {
+      return res.status(409).json({ error: 'Ce lecteur possède déjà un compte utilisateur. Veuillez vous connecter.' });
+    }
+
+    res.json({
+      id: reader.id,
+      nom: reader.nom,
+      prenom: reader.prenom,
+      type: reader.type,
+      faculte: reader.faculte,
+      filiere: reader.filiere,
+      niveau: reader.niveau,
+      telephone: reader.telephone,
+      matricule: reader.matricule,
+      email: reader.email,
+      date_inscription: reader.date_inscription
+    });
+  } catch (err) {
+    console.error('❌ Erreur lookupReaderByMatricule:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
+
 // Récupérer la fiche lecteur liée à l'utilisateur connecté
 exports.getCurrentReader = async (req, res) => {
   try {
@@ -36,6 +70,13 @@ exports.getCurrentReader = async (req, res) => {
     if (!username) return res.status(401).json({ error: 'Authentification requise' });
 
     const user = req.user?.id ? await User.findByPk(req.user.id) : null;
+
+    // lien explicite (fiabilise l'association, évite les correspondances approximatives)
+    if (user?.reader_id) {
+      const linkedReader = await Reader.findByPk(user.reader_id);
+      if (linkedReader) return res.json(linkedReader);
+    }
+
     const identifiers = [
       username,
       user?.username,
@@ -209,4 +250,48 @@ exports.searchReaders = async (req, res) => {
     console.error(err);
     res.status(500).json({ error: 'Erreur recherche lecteurs' });
   }
+};
+
+// Import en masse de lecteurs depuis un fichier Excel
+exports.importReaders = async (req, res) => {
+  const rows = Array.isArray(req.body.rows) ? req.body.rows : [];
+  let created = 0, updated = 0;
+  const errors = [];
+
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i] || {};
+    const rowNum = i + 2;
+    try {
+      const nom = (r.nom || '').toString().trim();
+      const prenom = (r.prenom || '').toString().trim();
+      if (!nom || !prenom) { errors.push({ row: rowNum, message: 'Nom et prénom requis' }); continue; }
+
+      const matricule = (r.matricule || '').toString().trim() || null;
+      const type = ['etudiant', 'enseignant', 'personnel', 'autre'].includes(r.type) ? r.type : 'etudiant';
+
+      const payload = {
+        matricule, nom, prenom, type,
+        faculte: r.faculte || null,
+        filiere: r.filiere || null,
+        niveau: r.niveau || null,
+        email: r.email || null,
+        telephone: r.telephone || null,
+        date_inscription: r.date_inscription || null
+      };
+
+      const existing = matricule ? await Reader.findOne({ where: { matricule } }) : null;
+      if (existing) {
+        await existing.update(payload);
+        updated++;
+      } else {
+        await Reader.create(payload);
+        created++;
+      }
+    } catch (err) {
+      errors.push({ row: rowNum, message: err.message });
+    }
+  }
+
+  logActivity(req.user?.id, 'Import lecteurs', { created, updated, errors: errors.length });
+  res.json({ created, updated, errors });
 };

@@ -125,6 +125,39 @@ async function ensureUserEmailColumn() {
   }
 }
 
+async function ensureUserReaderIdColumn() {
+  try {
+    const dialect = sequelize.getDialect();
+
+    if (dialect === 'sqlite') {
+      const [rows] = await sequelize.query("PRAGMA table_info(users)");
+      const columnExists = rows.some(col => col.name === 'reader_id');
+
+      if (!columnExists) {
+        console.log('✅ Colonne reader_id manquante sur users (sqlite), ajout...');
+        await sequelize.query("ALTER TABLE users ADD COLUMN reader_id INTEGER");
+        console.log('✅ Colonne reader_id ajoutée (sqlite)');
+      }
+      // index unique : autorise plusieurs NULL, mais un seul utilisateur par lecteur
+      await sequelize.query("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_reader_id ON users(reader_id)");
+    } else {
+      const dbName = sequelize.config.database || process.env.DB_NAME;
+      const [[row]] = await sequelize.query(
+        "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'users' AND COLUMN_NAME = 'reader_id'",
+        { replacements: [dbName] }
+      );
+
+      if (!row) {
+        console.log('✅ Colonne reader_id manquante sur users (mysql), ajout...');
+        await sequelize.query("ALTER TABLE users ADD COLUMN reader_id INT UNSIGNED NULL, ADD UNIQUE KEY uq_users_reader_id (reader_id)");
+        console.log('✅ Colonne reader_id ajoutée (mysql)');
+      }
+    }
+  } catch (error) {
+    console.log('ℹ️ Vérification de la colonne reader_id sur users échouée, continuation...', error.message);
+  }
+}
+
 (async () => {
   try {
     await sequelize.authenticate();
@@ -133,6 +166,7 @@ async function ensureUserEmailColumn() {
     await ensureLoanTypeColumn();
     await ensureActivityTimestamps();
     await ensureUserEmailColumn();
+    await ensureUserReaderIdColumn();
     await sequelize.sync(); // avoid ALTER with SQLite to prevent incompatible migration errors
     console.log('✅ Schéma synchronisé');
 

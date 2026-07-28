@@ -100,6 +100,49 @@ exports.createConsultation = async (req, res) => {
   }
 };
 
+// Import en masse de consultations depuis un fichier Excel
+exports.importConsultations = async (req, res) => {
+  const rows = Array.isArray(req.body.rows) ? req.body.rows : [];
+  let created = 0, updated = 0;
+  const errors = [];
+
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i] || {};
+    const rowNum = i + 2;
+    try {
+      const matricule = (r.matricule || '').toString().trim();
+      const heure_debut = (r.heure_debut || '').toString().trim();
+      if (!matricule || !heure_debut) { errors.push({ row: rowNum, message: 'matricule et heure_debut requis' }); continue; }
+
+      const reader = await Reader.findOne({ where: { matricule } });
+      if (!reader) { errors.push({ row: rowNum, message: `Lecteur introuvable (matricule ${matricule})` }); continue; }
+
+      let livre_id = null;
+      const codeLivre = (r.code_livre || '').toString().trim();
+      if (codeLivre) {
+        const book = await Book.findOne({ where: { code: codeLivre } });
+        if (!book) { errors.push({ row: rowNum, message: `Livre introuvable (code ${codeLivre})` }); continue; }
+        livre_id = book.id;
+      }
+
+      const payload = { lecteur_id: reader.id, livre_id, heure_debut, heure_fin: r.heure_fin || null };
+      const existing = await Consultation.findOne({ where: { lecteur_id: reader.id, livre_id, heure_debut } });
+      if (existing) {
+        await existing.update(payload);
+        updated++;
+      } else {
+        await Consultation.create(payload);
+        created++;
+      }
+    } catch (err) {
+      errors.push({ row: rowNum, message: err.message });
+    }
+  }
+
+  logActivity(req.user?.id, 'Import consultations', { created, updated, errors: errors.length });
+  res.json({ created, updated, errors });
+};
+
 exports.endConsultation = async (req, res) => {
   const t = await Consultation.sequelize.transaction();
   try {
